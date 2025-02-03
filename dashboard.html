@@ -1,0 +1,2333 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Dashoboard Balança Comercial</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="dashboard_files/libs/clipboard/clipboard.min.js"></script>
+<script src="dashboard_files/libs/quarto-html/quarto.js"></script>
+<script src="dashboard_files/libs/quarto-html/popper.min.js"></script>
+<script src="dashboard_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="dashboard_files/libs/quarto-html/anchor.min.js"></script>
+<link href="dashboard_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="dashboard_files/libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="dashboard_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="dashboard_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="dashboard_files/libs/bootstrap/bootstrap-0310abddaf23f0a5f43a1ad235ff27fd.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="dashboard_files/libs/quarto-dashboard/quarto-dashboard.js"></script>
+<script src="dashboard_files/libs/quarto-dashboard/stickythead.js"></script>
+<script src="dashboard_files/libs/quarto-dashboard/datatables.min.js" kdttablesentinel="true"></script>
+<script src="dashboard_files/libs/quarto-dashboard/pdfmake.min.js" kdttablesentinel="true"></script>
+<script src="dashboard_files/libs/quarto-dashboard/vfs_fonts.js" kdttablesentinel="true"></script>
+<script src="dashboard_files/libs/quarto-dashboard/web-components.js" type="module"></script>
+<script src="dashboard_files/libs/quarto-dashboard/components.js"></script>
+<link href="dashboard_files/libs/quarto-dashboard/datatables.min.css" rel="stylesheet" kdttablesentinel="true">
+
+
+</head>
+
+<body class="quarto-dashboard dashboard-sidebar fullcontent">
+
+<header id="quarto-dashboard-header">
+<nav class="navbar navbar-expand-md slim" data-bs-theme="dark">
+  <div class="navbar-container container-fluid">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#dashboard-collapse" aria-controls="dashboard-collapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>    
+
+
+    <div class="navbar-brand-container">       
+    <a href="#"><img src="www/logo.png" alt="" class="navbar-logo d-inline-block"></a>
+      <div class="navbar-title">
+        <div class="navbar-title-text"><a href="#">Dashoboard Balança Comercial</a></div>
+        
+        
+      </div>
+    </div>
+<div id="dashboard-collapse" class="navbar-collapse collapse"><ul class="navbar-nav navbar-nav-scroll me-auto" role="tablist"><li class="nav-item" role="presentation"><a id="tab-resumo" class="nav-link active" data-bs-toggle="tab" role="tab" data-bs-target="#resumo" data-scrolling="true" href="#resumo" aria-controls="resumo" aria-selected="true"><span class="nav-link-text">Resumo</span></a></li><li class="nav-item" role="presentation"><a id="tab-exportações" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#exportações" data-scrolling="true" href="#exportações" aria-controls="exportações" aria-selected="false"><span class="nav-link-text">Exportações</span></a></li><li class="nav-item" role="presentation"><a id="tab-importações" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#importações" data-scrolling="true" href="#importações" aria-controls="importações" aria-selected="false"><span class="nav-link-text">Importações</span></a></li><li class="nav-item" role="presentation"><a id="tab-o-porto" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#o-porto" data-scrolling="true" href="#o-porto" aria-controls="o-porto" aria-selected="false"><span class="nav-link-text">O Porto</span></a></li></ul></div></div>
+</nav>
+</header>
+<div class="page-layout-custom quarto-dashboard-content bslib-gap-spacing html-fill-container dashboard-scrolling quarto-dashboard-pages dashboard-sidebar-container">  
+
+<div class="bslib-sidebar-layout html-fill-item html-fill-container" data-bslib-sidebar-open="desktop" data-bslib-sidebar-init="true" data-bslib-sidebar-border="false" data-bslib-sidebar-border-radius="false"><div class="main html-fill-container html-fill-item"><div class="sidebar-content html-fill-item html-fill-container">
+<div class="tab-content bslib-grid html-fill-item html-fill-container" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div id="resumo" class="dashboard-page tab-pane show active html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-resumo">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, max-content) minmax(3em, 1fr) minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card html-fill-item html-fill-container bslib-card" data-fill="false" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-body html-fill-item html-fill-container">
+<div class="panel-fill panel-grid html-fill-item html-fill-container">
+<div class="g-col-24 html-fill-item html-fill-container">
+<div class="card cell panel-fill html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="datatables html-widget html-widget-output shiny-report-size html-fill-item html-fill-container" id="tabelaBrasil_Maranhao" style="width:100%;height:auto;"></div>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="highchart html-widget html-widget-output shiny-report-size html-fill-item html-fill-container" id="balanca_2anos" style="width:100%;height:400px;"></div>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="highchart html-widget html-widget-output shiny-report-size html-fill-item html-fill-container" id="balanca_2014_2024" style="width:100%;height:400px;"></div>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+</div><div id="exportações" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-exportações">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr) minmax(3em, max-content); grid-auto-columns: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="datatables html-widget html-widget-output shiny-report-size html-fill-item html-fill-container" id="tabela_Exp_Prod2024" style="width:100%;height:auto;"></div>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card html-fill-item html-fill-container bslib-card" data-fill="false" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-body html-fill-item html-fill-container">
+<div class="panel-fill panel-grid html-fill-item html-fill-container">
+<div class="g-col-24 html-fill-item html-fill-container">
+<div class="card cell panel-fill html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="highchart html-widget html-widget-output shiny-report-size html-fill-item html-fill-container" id="destinos_2014_2024" style="width:100%;height:400px;"></div>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+</div><div id="importações" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-importações">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr) minmax(3em, max-content); grid-auto-columns: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="datatables html-widget html-widget-output shiny-report-size html-fill-item html-fill-container" id="tabela_Imp_Prod2024" style="width:100%;height:auto;"></div>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card html-fill-item html-fill-container bslib-card" data-fill="false" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-body html-fill-item html-fill-container">
+<div class="panel-fill panel-grid html-fill-item html-fill-container">
+<div class="g-col-24 html-fill-item html-fill-container">
+<div class="card cell panel-fill html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="highchart html-widget html-widget-output shiny-report-size html-fill-item html-fill-container" id="origens_2014_2024" style="width:100%;height:400px;"></div>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+</div><div id="o-porto" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-o-porto">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, max-content); grid-auto-columns: minmax(0, 1fr);">
+<div class="card html-fill-item html-fill-container bslib-card" data-fill="false" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-body html-fill-item html-fill-container">
+<div class="panel-fill panel-grid html-fill-item html-fill-container">
+<div class="g-col-24 html-fill-item html-fill-container">
+<div class="card cell panel-fill html-fill-item html-fill-container bslib-card" data-title="Porto do Itaqui" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title html-fill-item html-fill-container"><span style="display: inline">
+Porto do Itaqui
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container" style="padding: 0px;">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="leaflet html-widget html-widget-output shiny-report-size html-fill-item html-fill-container" id="id_map" style="width:100%;height:400px;"></div>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+<div id="3ade8a4a-fb1d-4a6c-8409-ac45482d5fc9" class="hidden html-fill-item html-fill-container">
+
+</div>
+</div>
+</div>
+</div>
+</div></div><aside id="bslib-sidebar-1" class="sidebar html-fill-container html-fill-item"><div class="html-fill-container html-fill-item">
+<div class="cell-output-display">
+<p style="text-align: justify;">O painel busca apresentar os dados da Balança Comercial Brasileira e Maranhense por meio dos dados da Secretaria de Comércio Exterior (SECEX).
+Use os filtros abaixos para consultar as informações desejadas.</p>
+</div>
+<div class="cell-output-display no-overflow-x">
+<div class="form-group shiny-input-container">
+<label class="control-label" id="SelecaoUF-label" for="SelecaoUF">Selecione a Unidade Federativa:</label>
+<div>
+<select id="SelecaoUF" class="shiny-input-select"><option value="Brasil">Brasil</option>
+<option value="Nordeste">Nordeste</option>
+<option value="Maranhão" selected="">Maranhão</option></select>
+<script type="application/json" data-for="SelecaoUF" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+</div>
+<div class="cell-output-display no-overflow-x">
+<div class="form-group shiny-input-container">
+<label class="control-label" id="variavelY-label" for="variavelY">Selecione uma variável</label>
+<div>
+<select id="variavelY" class="shiny-input-select"><option value="Valor (em milhões de dólares)" selected="">Valor (em milhões de dólares)</option>
+<option value="Peso (em milhões de toneladas)">Peso (em milhões de toneladas)</option></select>
+<script type="application/json" data-for="variavelY" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+</div>
+<div class="cell-output-display">
+<p style="text-align: left;">
+Realização</p>
+</div>
+<div class="cell-output-display">
+<img src="www/labportos.jpeg" style="display: block; margin-left: auto; margin-right: auto;" class="quarto-dashboard-img-contain">
+</div>
+<div class="cell-output-display">
+<br>
+</div>
+<div class="cell-output-display">
+<p style="text-align: left;">Financiamento</p>
+</div>
+<div class="cell-output-display">
+<img src="www/logo_itaqui.jpeg" style="display: block; margin-left: auto; margin-right: auto;" class="quarto-dashboard-img-contain">
+</div>
+<div class="cell-output-display">
+<br>
+</div>
+</div></aside>
+<button class="collapse-toggle" type="button" title="Toggle sidebar" aria-expanded="true" aria-controls="bslib-sidebar-1">
+    <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 16 16" class="bi bi-chevron-left collapse-icon" style="fill:currentColor;" aria-hidden="true" role="img">
+      <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"></path>
+    </svg>
+</button>
+<script data-bslib-sidebar-init="">
+bslib.Sidebar.initCollapsibleAll()
+</script>
+</div>
+<p>
+<script type="application/shiny-prerendered" data-context="server-start">
+library(renv)
+library(leaflet)
+library(leaflet.providers)
+library(DT)
+library(highcharter)
+
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+library(arrow)
+library(dplyr)
+
+
+ler_dados <- function(nome_arquivo) {
+    nomes_arquivos <- c("ncm_exportacao", "ncm_importacao", "m_exportacao", "m_importacao")
+    if (!(nome_arquivo %in% nomes_arquivos)) {
+        stop(paste0("Nome de arquivo inválido. Escolha entre: ", paste(nomes_arquivos, collapse = ", ")))
+    }
+    caminho_arquivo <- paste0("dados/", nome_arquivo, ".parquet")
+    
+    tryCatch({
+        dados <- arrow::read_parquet(caminho_arquivo, col_select = everything())
+        
+        # if (nome_arquivo %in% c("ncm_exportacao", "ncm_importacao")) {
+        #     dados <- dados %>%
+        #         dplyr::mutate(no_cuci_sec = stringr::str_to_title(no_cuci_sec))
+        # }
+        return(dados)
+    }, error = function(e) {
+        message(paste("Erro ao ler o arquivo:", e))
+        return(NULL)  # Return NULL if there's an error
+    })
+}
+
+
+
+
+
+##############
+
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = FALSE, dpi = 400)
+
+
+
+
+# se a pasta dados não estiver criada, então criar a pasta dados
+if (!dir.exists("dados")) {dir.create("dados", showWarnings = FALSE)}
+
+
+cores <- c(
+    "#66c2a5", "#fc8d62", "#8da0cb",
+    "#e78ac3", "#a6d854", "#ffd92f"
+)
+
+############### FUNÇÕES #########################
+nome_mes <- function(x) {
+    dplyr::case_match(
+        x,
+        01 ~ "janeiro",
+        02 ~"fevereiro",
+        03 ~ "marco",
+        04 ~ "abril",
+        05 ~ "maio",
+        06 ~ "junho",
+        07 ~ "julho",
+        08 ~ "agosto",
+        09 ~ "setembro",
+        10 ~ "outubro",
+        11 ~ "novembro",
+        12 ~ "dezembro",
+        .default = "mês não encontrado"
+    )
+}
+
+
+
+format_number_with_scale <- function(x, scale_breaks = c(1e3, 1e6, 1e9, 1e12), scale_suffixes = c(" Mil", " Mi", " Bi", " Tri"), big.mark = ".", decimal.mark = ",") {
+    
+    format_single <- function(x_val, i_val) {
+        if (is.na(x_val) || is.infinite(x_val)) {
+            return(NA)
+        }
+        if (i_val > 0) {
+            suffix <- scale_suffixes[i_val]
+            scaled_x <- x_val / scale_breaks[i_val]
+            paste0(format(round(scaled_x, 2), big.mark = big.mark, decimal.mark = decimal.mark, scientific = FALSE, nsmall = 2), suffix) # Modificado aqui
+        } else {
+            format(round(x_val, 2), big.mark = big.mark, decimal.mark = decimal.mark, scientific = FALSE, nsmall = 2) # Modificado aqui
+        }
+    }
+    
+    i <- findInterval(abs(x), scale_breaks)
+    mapply(format_single, x, i)
+}
+
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+######################### M_EXPORTACAO #########################################
+m_exportacao_reativo <- reactive({
+  # m_exportacao <- ler_dados("m_exportacao") 
+  schema  <- 
+  arrow::schema(
+    no_pais = arrow::string(),
+    no_bloco = arrow::string(),
+    sigla_uf = arrow::string(),
+    no_uf = arrow::string(),
+    no_regiao = arrow::string(),
+    no_mun_min = arrow::string(),
+    # interger
+    ano = arrow::int64(),
+    mes = arrow::int64(),
+    # double
+    peso_liquido_kg = arrow::float64(),
+    valor_fob_dolar = arrow::float64() 
+  )
+
+
+m_exportacao <- 
+  arrow::open_dataset(
+    sources = "dados/m_exportacao_agrupado.parquet",
+    schema = schema
+  ) |> dplyr::collect()
+
+
+
+
+m_exportacao <-
+    m_exportacao |>
+    dplyr::mutate(
+      nome_mes =
+        dplyr::case_match(
+          as.character(mes),
+          "1" ~ "jan.",
+          "2" ~ "fev.",
+          "3" ~ "mar.",
+          "4" ~ "abr.",
+          "5" ~ "maio",
+          "6" ~ "jun.",
+          "7" ~ "jul.",
+          "8" ~ "ago.",
+          "9" ~ "set.",
+          "10" ~ "out.",
+          "11" ~ "nov.",
+          "12" ~ "dez.",
+          .default = "mês não encontrado"
+        ),
+      nome_mes = factor(
+        nome_mes,
+        levels =
+          c(
+            "jan.", "fev.", "mar.",
+            "abr.", "maio", "jun.",
+            "jul.", "ago.", "set." ,
+            "out.", "nov.", "dez."
+          )
+      ),
+      no_pais = dplyr::if_else(no_pais == "Países Baixos (Holanda)", "Holanda", no_pais)
+    ) |> 
+  mutate(
+    valor_fob_dolar = valor_fob_dolar/10^6,
+    peso_liquido_kg = peso_liquido_kg /10^9
+  )
+
+
+m_exportacao <-
+    m_exportacao |>
+    dplyr::mutate(
+      dplyr::across(tidyselect::where(is.character), ~ dplyr::case_when(is.na(.x) ~ "", TRUE ~ .x)),
+      dplyr::across(tidyselect::where(is.numeric), ~ tidyr::replace_na(.x, 0))
+    )
+
+m_exportacao <-
+    m_exportacao |>
+    dplyr::mutate(
+      no_regiao =
+        dplyr::case_when(
+          no_regiao == "REGIAO NORDESTE" ~ "Nordeste",
+          no_regiao == "REGIAO SUDESTE" ~ "Sudeste",
+          no_regiao == "REGIAO SUL" ~ "Sul",
+          no_regiao == "REGIAO NORTE" ~ "Norte",
+          no_regiao == "REGIAO CENTRO OESTE" ~ "Centro-Oeste",
+          no_regiao == "REGIAO NAO DECLARADA" ~ "Não Declarada"
+        )
+    )
+
+  return(m_exportacao)
+})
+
+############################### M_IMPORTACAO ##########################################
+
+m_importacao_reativo <- reactive({
+  # m_importacao <- ler_dados("m_importacao")
+  schema  <- 
+  arrow::schema(
+    no_pais = arrow::string(),
+    no_bloco = arrow::string(),
+    sigla_uf = arrow::string(),
+    no_uf = arrow::string(),
+    no_regiao = arrow::string(),
+    no_mun_min = arrow::string(),
+    # interger
+    ano = arrow::int64(),
+    mes = arrow::int64(),
+    # double
+    peso_liquido_kg = arrow::float64(),
+    valor_fob_dolar = arrow::float64() 
+  )
+
+
+m_importacao <- 
+  arrow::open_dataset(
+    sources = "dados/m_importacao_agrupado.parquet",
+    schema = schema
+  )  |> dplyr::collect()
+
+m_importacao <-
+    m_importacao |>
+    dplyr::mutate(
+      nome_mes =
+        dplyr::case_match(
+          as.character(mes),
+          "1" ~ "jan.",
+          "2" ~ "fev.",
+          "3" ~ "mar.",
+          "4" ~ "abr.",
+          "5" ~ "maio",
+          "6" ~ "jun.",
+          "7" ~ "jul.",
+          "8" ~ "ago.",
+          "9" ~ "set.",
+          "10" ~ "out.",
+          "11" ~ "nov.",
+          "12" ~ "dez.",
+          .default = "mês não encontrado"
+        ),
+      nome_mes = factor(
+        nome_mes,
+        levels =
+          c(
+            "jan.", "fev.", "mar.",
+            "abr.", "maio", "jun.",
+            "jul.", "ago.", "set.",
+            "out.", "nov.", "dez."
+          )
+      ),
+      no_pais = dplyr::if_else(no_pais == "Países Baixos (Holanda)", "Holanda", no_pais)
+    ) |> 
+    mutate(
+    valor_fob_dolar = valor_fob_dolar/10^6,
+    peso_liquido_kg = peso_liquido_kg /10^9
+  )
+
+
+m_importacao <-
+    m_importacao |>
+    dplyr::mutate(
+      dplyr::across(tidyselect::where(is.character), ~ dplyr::case_when(is.na(.x) ~ "", TRUE ~ .x)),
+      dplyr::across(tidyselect::where(is.numeric), ~ tidyr::replace_na(.x, 0))
+    )
+
+
+m_importacao <-
+    m_importacao |>
+    dplyr::mutate(
+      no_regiao =
+        dplyr::case_when(
+          no_regiao == "REGIAO NORDESTE" ~ "Nordeste",
+          no_regiao == "REGIAO SUDESTE" ~ "Sudeste",
+          no_regiao == "REGIAO SUL" ~ "Sul",
+          no_regiao == "REGIAO NORTE" ~ "Norte",
+          no_regiao == "REGIAO CENTRO OESTE" ~ "Centro-Oeste",
+          no_regiao == "REGIAO NAO DECLARADA" ~ "Não Declarada"
+        )
+    )
+
+  return(m_importacao)
+
+})
+
+################### ACUMULADO: M_EXPORTACAO E M_IMPORTACAO ######################
+criar_acumulado <- function(m_exportacao, m_importacao, variavelY) {
+
+
+  # Calcula as exportações
+  exportacoes <- dplyr::bind_rows(
+    #Maranhão
+    m_exportacao() |>
+      dplyr::filter(
+        no_uf == "Maranhão"
+      ) |>
+      dplyr::group_by(ano, mes, nome_mes, uf = no_uf) |>
+      dplyr::summarise(
+        exp_valor = ifelse(
+          variavelY == "Valor (em milhões de dólares)",
+          sum(valor_fob_dolar, na.rm = TRUE),
+          sum(peso_liquido_kg, na.rm = TRUE)
+        ),
+        .groups = "drop"
+      ),
+
+    #Nordeste
+    m_exportacao() |>
+      dplyr::filter(
+          no_regiao == "Nordeste"
+      ) |>
+      dplyr::group_by(ano, mes, nome_mes, uf = "Nordeste") |> # <--- uf = "Nordeste"
+      dplyr::summarise(
+        exp_valor = ifelse(
+          variavelY == "Valor (em milhões de dólares)",
+          sum(valor_fob_dolar, na.rm = TRUE),
+          sum(peso_liquido_kg, na.rm = TRUE)
+        ),
+        .groups = "drop"
+      ),
+
+    # Brasil
+    m_exportacao() |>
+      dplyr::group_by(ano, mes, nome_mes, uf = "Brasil") |> # <--- uf = "Brasil"
+      dplyr::summarise(
+        exp_valor = ifelse(
+          variavelY == "Valor (em milhões de dólares)",
+          sum(valor_fob_dolar, na.rm = TRUE),
+          sum(peso_liquido_kg, na.rm = TRUE)
+        ),
+        .groups = "drop"
+      )
+  )
+
+  # Calcula as importações
+  importacoes <- dplyr::bind_rows(
+    # Maranhão
+    m_importacao() |>
+      dplyr::filter(
+          no_uf == "Maranhão"
+      ) |>
+      dplyr::group_by(ano, mes, nome_mes, uf = no_uf) |>
+      dplyr::summarise(
+        imp_valor = ifelse(
+          variavelY == "Valor (em milhões de dólares)",
+          sum(valor_fob_dolar, na.rm = TRUE),
+          sum(peso_liquido_kg, na.rm = TRUE)
+        ),
+        .groups = "drop"
+      ),
+
+    # Nordeste
+    m_importacao() |>
+      dplyr::filter(
+          no_regiao == "Nordeste"
+      ) |>
+      dplyr::group_by(ano, mes, nome_mes , uf = "Nordeste") |>
+      dplyr::summarise(
+        imp_valor = ifelse(
+          variavelY == "Valor (em milhões de dólares)",
+          sum(valor_fob_dolar, na.rm = TRUE),
+          sum(peso_liquido_kg, na.rm = TRUE)
+          ),
+        .groups = "drop"
+      ),
+
+    # Brasil
+    m_importacao() |>
+      dplyr::filter(
+      ) |>
+      dplyr::group_by(ano, mes, nome_mes, uf = "Brasil") |>
+      dplyr::summarise(
+        imp_valor = ifelse(
+          variavelY == "Valor (em milhões de dólares)",
+          sum(valor_fob_dolar, na.rm = TRUE),
+          sum(peso_liquido_kg, na.rm = TRUE)
+          ),
+        .groups = "drop"
+      )
+  )
+
+  # Junta as exportações e importações
+  acumulado <- exportacoes |>
+    dplyr::left_join(importacoes, by = c("ano", "mes", "nome_mes", "uf")) |>
+    dplyr::mutate(
+      saldo = exp_valor - imp_valor,
+      corrente = exp_valor + imp_valor
+    )
+
+  rm(exportacoes)
+  rm(importacoes)
+  gc() 
+  
+  
+  return(acumulado)
+}
+
+# Objeto reativo para 'acumulado'
+acumulado_reativo <- reactive({
+  criar_acumulado(m_exportacao_reativo, m_importacao_reativo, input$variavelY)
+})
+
+
+#################################### NCM_EXPORTACAO #####################################
+ncm_exportacao_reativo <- shiny::reactive({
+schema  <- 
+  arrow::schema(
+    no_pais = arrow::string(),
+    no_bloco = arrow::string(),
+    sigla_uf_ncm = arrow::string(),
+    no_uf = arrow::string(),
+    no_regiao = arrow::string(),
+    no_via = arrow::string(),
+    no_urf = arrow::string(),
+    no_cuci_grupo = arrow::string(),
+    no_cgce_n1 = arrow::string(),
+    # interger
+    ano = arrow::int64(),
+    mes = arrow::int64(),
+    # double
+    peso_liquido_kg = arrow::float64(),
+    valor_fob_dolar = arrow::float64() 
+  )
+    
+ncm_exportacao <- 
+  arrow::open_dataset(
+    sources = "dados/ncm_exportacao_agrupado.parquet",
+    schema = schema
+  ) |> dplyr::collect()
+
+
+ncm_exportacao <-
+    ncm_exportacao |>
+    dplyr::mutate(
+      nome_mes =
+        dplyr::case_match(
+          as.character(mes),
+          "1" ~ "jan.",
+          "2" ~ "fev.",
+          "3" ~ "mar.",
+          "4" ~ "abr.",
+          "5" ~ "maio",
+          "6" ~ "jun.",
+          "7" ~ "jul.",
+          "8" ~ "ago.",
+          "9" ~ "set.",
+          "10" ~ "out.",
+          "11" ~ "nov.",
+          "12" ~ "dez.",
+          .default = "mês não encontrado"
+        ),
+      nome_mes = factor(
+        nome_mes,
+        levels =
+          c(
+            "jan.", "fev.", "mar.",
+            "abr.", "maio", "jun.",
+            "jul.", "ago.", "set." ,
+            "out.", "nov.", "dez."
+          )
+      ),
+      no_pais = dplyr::if_else(no_pais == "Países Baixos (Holanda)", "Holanda", no_pais)
+    ) |> 
+  dplyr::mutate(
+    valor_fob_dolar = valor_fob_dolar/10^6,
+    peso_liquido_kg = peso_liquido_kg /10^9
+  )
+
+
+ncm_exportacao <- 
+  ncm_exportacao |> 
+  dplyr::mutate(
+    dplyr::across(tidyselect::where(is.character), ~ dplyr::case_when(is.na(.x) ~ "", TRUE ~ .x)), # Para character
+    dplyr::across(tidyselect::where(is.numeric), ~ tidyr::replace_na(.x, 0)) # Para numeric
+  )
+
+
+
+ncm_exportacao <-
+    ncm_exportacao |>
+    dplyr::mutate(
+      no_regiao =
+        dplyr::case_when(
+          no_regiao == "REGIAO NORDESTE" ~ "Nordeste",
+          no_regiao == "REGIAO SUDESTE" ~ "Sudeste",
+          no_regiao == "REGIAO SUL" ~ "Sul",
+          no_regiao == "REGIAO NORTE" ~ "Norte",
+          no_regiao == "REGIAO CENTRO OESTE" ~ "Centro-Oeste",
+          no_regiao == "REGIAO NAO DECLARADA" ~ "Não Declarada"
+        )
+    )
+
+  return(ncm_exportacao)
+})
+#################################### NCM_IMPORTACAO #####################################
+ncm_importacao_reativo <- reactive({
+schema  <- 
+  arrow::schema(
+    no_pais = arrow::string(),
+    no_bloco = arrow::string(),
+    sigla_uf_ncm = arrow::string(),
+    no_uf = arrow::string(),
+    no_regiao = arrow::string(),
+    no_via = arrow::string(),
+    no_urf = arrow::string(),
+    no_cuci_grupo = arrow::string(),
+    no_cgce_n1 = arrow::string(),
+    # interger
+    ano = arrow::int64(),
+    mes = arrow::int64(),
+    # double
+    peso_liquido_kg = arrow::float64(),
+    valor_fob_dolar = arrow::float64() 
+  )
+    
+ncm_importacao <- 
+  arrow::open_dataset(
+    sources = "dados/ncm_importacao_agrupado.parquet",
+    schema = schema
+  ) |> dplyr::collect()
+
+
+ncm_importacao <-
+    ncm_importacao |>
+    dplyr::mutate(
+      nome_mes =
+        dplyr::case_match(
+          as.character(mes),
+          "1" ~ "jan.",
+          "2" ~ "fev.",
+          "3" ~ "mar.",
+          "4" ~ "abr.",
+          "5" ~ "maio",
+          "6" ~ "jun.",
+          "7" ~ "jul.",
+          "8" ~ "ago.",
+          "9" ~ "set.",
+          "10" ~ "out.",
+          "11" ~ "nov.",
+          "12" ~ "dez.",
+          .default = "mês não encontrado"
+        ),
+      nome_mes = factor(
+        nome_mes,
+        levels =
+          c(
+            "jan.", "fev.", "mar.",
+            "abr.", "maio", "jun.",
+            "jul.", "ago.", "set." ,
+            "out.", "nov.", "dez."
+          )
+      ),
+      no_pais = dplyr::if_else(no_pais == "Países Baixos (Holanda)", "Holanda", no_pais)
+    ) |> 
+  mutate(
+    valor_fob_dolar = valor_fob_dolar/10^6,
+    peso_liquido_kg = peso_liquido_kg /10^9
+  )
+
+
+ncm_importacao <- 
+  ncm_importacao |> 
+  dplyr::mutate(
+    dplyr::across(tidyselect::where(is.character), ~ dplyr::case_when(is.na(.x) ~ "", TRUE ~ .x)), # Para character
+    dplyr::across(tidyselect::where(is.numeric), ~ tidyr::replace_na(.x, 0)) # Para numeric
+  )
+
+
+
+ncm_importacao <-
+    ncm_importacao |>
+    dplyr::mutate(
+      no_regiao =
+        dplyr::case_when(
+          no_regiao == "REGIAO NORDESTE" ~ "Nordeste",
+          no_regiao == "REGIAO SUDESTE" ~ "Sudeste",
+          no_regiao == "REGIAO SUL" ~ "Sul",
+          no_regiao == "REGIAO NORTE" ~ "Norte",
+          no_regiao == "REGIAO CENTRO OESTE" ~ "Centro-Oeste",
+          no_regiao == "REGIAO NAO DECLARADA" ~ "Não Declarada"
+        )
+    )
+
+  return(ncm_importacao)
+})
+
+
+
+extrair_texto_entre_parenteses <- function(texto) {
+  # Encontra todas as ocorrências de texto dentro de parênteses
+  resultados <- stringr::str_extract_all(texto, "(?<=\\().*?(?=\\))")[[1]]
+
+  return(resultados)
+}
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+funcao_ncm_exportacao_agrupado <- function(dados, coluna_agrupamento) {
+  # Função interna para processar um nível geográfico
+  processar_nivel <- function(dados, uf_valor, coluna_agrupamento) {
+    dados |>
+      dplyr::group_by(ano, mes, nome_mes, uf = uf_valor, {{coluna_agrupamento}}) |>  # Use {{coluna_agrupamento}} aqui
+      dplyr::summarise(
+        valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
+        peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
+        .groups = "drop"
+      )
+  }
+  
+
+ # Filtrando o data frame dados antes de agrupar (corrigido aqui)
+  dados_filtrado <- dados |> dplyr::filter(no_uf %in% c("Maranhão", "Brasil") | no_regiao == "Nordeste")
+  
+
+
+  resultado <- dplyr::bind_rows(
+    processar_nivel(
+      dados_filtrado |> dplyr::filter(no_uf == "Maranhão"),
+      "Maranhão", coluna_agrupamento = no_pais   # Corrigido aqui
+    ),
+    processar_nivel(
+      dados_filtrado |> dplyr::filter(no_regiao == "Nordeste"),
+      "Nordeste", coluna_agrupamento = no_pais   # Corrigido aqui
+    ),
+    processar_nivel(
+      dados_filtrado, # Brasil não precisa de filtro
+      "Brasil", coluna_agrupamento = no_pais   # Corrigido aqui
+    )
+  )
+  return(resultado)
+}
+
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+funcao_ncm_importacao_agrupado <- function(dados, coluna_agrupamento) {
+  # Função interna para processar um nível geográfico
+  processar_nivel <- function(dados, uf_valor, coluna_agrupamento) {
+    dados |>
+      dplyr::group_by(ano, mes, nome_mes, uf = uf_valor, {{coluna_agrupamento}}) |>  # Use {{coluna_agrupamento}} aqui
+      dplyr::summarise(
+        valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
+        peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
+        .groups = "drop"
+      )
+  }
+  
+
+ # Filtrando o data frame dados antes de agrupar (corrigido aqui)
+  dados_filtrado <- dados |> dplyr::filter(no_uf %in% c("Maranhão", "Brasil") | no_regiao == "Nordeste")
+  
+
+
+  resultado <- dplyr::bind_rows(
+    processar_nivel(
+      dados_filtrado |> dplyr::filter(no_uf == "Maranhão"),
+      "Maranhão", coluna_agrupamento = no_pais   # Corrigido aqui
+    ),
+    processar_nivel(
+      dados_filtrado |> dplyr::filter(no_regiao == "Nordeste"),
+      "Nordeste", coluna_agrupamento = no_pais   # Corrigido aqui
+    ),
+    processar_nivel(
+      dados_filtrado, # Brasil não precisa de filtro
+      "Brasil", coluna_agrupamento = no_pais   # Corrigido aqui
+    )
+  )
+  return(resultado)
+}
+
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+output$tabelaBrasil_Maranhao <- DT::renderDT({
+  
+  dados_filtrados <-
+    acumulado_reativo() |>
+    dplyr::filter(ano == 2024 & uf == input$SelecaoUF) |>
+    dplyr::mutate(mes = as.character(mes)) |>
+    dplyr::select(!c(ano, mes, uf))
+  
+  dados_filtrados <- 
+    dados_filtrados |> 
+    janitor::adorn_totals() |>
+    dplyr::mutate(nome_mes = dplyr::if_else(nome_mes == "-", "Total", nome_mes)) 
+
+  
+  DT::datatable(
+    dados_filtrados,
+    options = list(
+      dom = 't',
+      pageLength = -1,
+      initComplete = JS(
+        "function(settings, json) {
+          $(this.api().table().header()).css({'background-color': '#74BBDC', 'color': '#fff'});
+        }"
+      ),
+      columnDefs = list(
+        list(className = 'dt-center', targets = 0)
+      )
+    ),
+    rownames = FALSE,
+    colnames = c("Mês", "Exportações", "Importações", "Saldo", "Corrente"),
+    caption = htmltools::tags$caption(
+      style = 'font-size: 20px; font-weight: bold; caption-side: top; text-align: center;',
+      htmltools::tags$p("Balança Comercial de 2024 do ", input$SelecaoUF, ", valores ", extrair_texto_entre_parenteses(input$variavelY))
+    ) 
+  ) |>
+    DT::formatCurrency(
+      c("exp_valor", "imp_valor", "saldo", "corrente"),
+      currency = "",
+      mark = ".",
+      dec.mark = ",",
+      digits = 2
+    ) |>
+    DT::formatStyle(
+      columns = 0:4,
+      target = "row",
+      fontWeight = styleEqual("Total", "bold")
+    ) |>
+    DT::formatStyle(
+      "saldo",
+      color = styleInterval(
+        cuts = 0,
+        values = c("red4", "seagreen")
+      )
+    )
+})
+
+
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+output$balanca_2anos <- highcharter::renderHighchart({
+acumulado1 <- 
+acumulado_reativo() |> 
+  dplyr::filter(ano == c(max(ano), max(ano) - 1)) |> 
+  tidyr::pivot_longer(
+    !c(ano, mes, nome_mes, uf),
+    values_to = "valor",
+    names_to = "balanca"
+    
+) 
+
+acumulado1 <- 
+acumulado1 |> 
+dplyr::mutate(
+    balanca = dplyr::case_match(
+      balanca,
+      "exp_valor" ~ "Exportação",
+      "imp_valor" ~ "Importação",
+      "saldo" ~ "Saldo",
+      "corrente" ~ "Corrente",
+      .default = NA
+    )
+  ) |> 
+  dplyr::mutate(data = lubridate::ymd(paste0(ano, "-", mes, "-01")), .before = nome_mes) 
+
+
+
+acumulado1 <- 
+ acumulado1 |>  dplyr::filter(uf == input$SelecaoUF) 
+
+  # Verificando os dados
+  # cat("Tabela Balança 2024\n")
+  # print(acumulado1) # Imprime os dados filtrados
+  # str(acumulado1) 
+
+
+min_data <- min(acumulado1$data)
+max_data <- max(acumulado1$data)
+breaks_datas <- seq(min_data, max_data, by = "1 months")
+
+
+expanded_min <- min_data - lubridate::period("2 month")
+expanded_max <- max_data + lubridate::period("2 month")
+# 
+# cat("Acumulados 1", "\n")
+# print(acumulado1)
+# 
+
+##### TOOLTIP
+tooltip <- list(
+        pointFormatter = highcharter::JS(
+          "function() {
+            return this.balanca + ': ' + Highcharts.numberFormat(this.y, 2, ',', '.');
+          }"
+        )
+      )
+
+
+# Cria o gráfico Highcharter
+ # Separa os dados em múltiplos dataframes
+  exportacao_df <- acumulado1 |> filter(balanca == "Exportação")
+  importacao_df <- acumulado1 |> filter(balanca == "Importação")
+  saldo_df <- acumulado1 |> filter(balanca == "Saldo")
+  corrente_df <- acumulado1 |> filter(balanca == "Corrente")
+# 
+# cat("Exportação", "\n")
+# print(exportacao_df)
+
+
+# cat("Importação", "\n")
+# print(importacao_df)
+#   
+# 
+# cat("Saldo", "\n")
+# print(saldo_df)
+# 
+# cat("Corrente", "\n")
+# print(corrente_df)
+
+  # Cria o gráfico Highcharter com múltiplas séries
+  highcharter::highchart() |>
+    highcharter::hc_add_series(
+      data = acumulado1 |> dplyr::filter(balanca == "Exportação"),
+      type = "line",
+      highcharter::hcaes(x = data, y = valor),
+      name = "Exportação",
+      tooltip = tooltip
+    ) |>
+    highcharter::hc_add_series(
+      data = acumulado1 |> dplyr::filter(balanca == "Importação"),
+      type = "line",
+      highcharter::hcaes(x = data, y = valor),
+      name = "Importação",
+      tooltip = tooltip
+    ) |>
+    highcharter::hc_add_series(
+      data = acumulado1 |> dplyr::filter(balanca == "Saldo"),
+      type = "line",
+      highcharter::hcaes(x = data, y = valor),
+      name = "Saldo",
+      tooltip = tooltip
+    ) |>
+    highcharter::hc_add_series(
+      data = acumulado1 |> dplyr::filter(balanca == "Corrente"),
+      type = "line",
+      highcharter::hcaes(x = data, y = valor),
+      name = "Corrente",
+      tooltip = tooltip
+    ) |>
+    highcharter::hc_xAxis(
+      type = "datetime",
+      dateTimeLabelFormats = list(month = '%b/%Y')
+    ) |>
+    highcharter::hc_yAxis(
+      title = list(text = "Valor"),
+      labels = list(formatter = highcharter::JS("function() {
+      return Highcharts.numberFormat(this.value, 0, ',', '.'); // Formata o valor com 0 casas decimais, separador decimal ',' e separador de milhares '.'
+    }"))
+    ) |>
+  highcharter::hc_title(
+    text = paste("Evolução da balança comercial mensal nos últimos dois anos do ", input$SelecaoUF, ", valores ", extrair_texto_entre_parenteses(input$variavelY)),
+    style = list(fonSize = "20px", fontWeight = "bold"))
+
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+output$balanca_2014_2024 <- highcharter::renderHighchart({
+  
+acumulado1 <- 
+acumulado_reativo() |> 
+  dplyr::select(!c(mes, nome_mes)) |> 
+  tidyr::pivot_longer(
+    !c(ano, uf),
+    values_to = "valor",
+    names_to = "balanca"
+) |> 
+  dplyr::group_by(ano, uf, balanca) |> 
+  dplyr::summarise(valor = sum(valor), .groups = "drop") |> 
+dplyr::mutate(
+    balanca = dplyr::case_match(
+      balanca,
+      "exp_valor" ~ "Exportação",
+      "imp_valor" ~ "Importação",
+      "saldo" ~ "Saldo",
+      "corrente" ~ "Corrente",
+      .default = NA
+    )
+  ) |> 
+  tidyr::complete(
+    ano = 2014:2024,
+    uf,
+    balanca,
+    fill = list(valor = NA)
+  )
+
+
+# Filtrar dados para a UF selecionada
+dados_uf <- acumulado1 |> 
+  dplyr::filter(uf == input$SelecaoUF)
+
+
+
+
+##### TOOLTIP
+tooltip <- list(
+        pointFormatter = highcharter::JS(
+          "function() {
+            return this.balanca + ': ' + Highcharts.numberFormat(this.y, 2, ',', '.');
+          }"
+        )
+      )
+
+
+
+  # Cria o gráfico Highcharter com múltiplas séries
+  highcharter::highchart() |>
+    highcharter::hc_add_series(
+      data = dados_uf |> dplyr::filter(balanca == "Exportação"),
+      type = "line",
+      highcharter::hcaes(x = ano, y = valor),
+      name = "Exportação",
+      tooltip = tooltip
+    ) |>
+    highcharter::hc_add_series(
+      data = dados_uf |> dplyr::filter(balanca == "Importação"),
+      type = "line",
+      highcharter::hcaes(x = ano, y = valor),
+      name = "Importação",
+      tooltip = tooltip
+    ) |>
+    highcharter::hc_add_series(
+      data = dados_uf |> dplyr::filter(balanca == "Saldo"),
+      type = "line",
+      highcharter::hcaes(x = ano, y = valor),
+      name = "Saldo",
+      tooltip = tooltip
+    ) |>
+    highcharter::hc_add_series(
+      data = dados_uf |> dplyr::filter(balanca == "Corrente"),
+      type = "line",
+      highcharter::hcaes(x = ano, y = valor),
+      name = "Corrente",
+      tooltip = tooltip
+    ) |>
+    highcharter::hc_yAxis(
+      title = list(text = "Valor"),
+      labels = list(formatter = highcharter::JS("function() {
+      return Highcharts.numberFormat(this.value, 0, ',', '.'); // Formata o valor com 0 casas decimais, separador decimal ',' e separador de milhares '.'
+    }"))
+    ) |>
+    highcharter::hc_xAxis(
+      title = list(text = "Ano")
+    ) |> 
+  highcharter::hc_title(
+    text = paste("Evolução da balança comercial anual (2014-2024) do", 
+                 input$SelecaoUF, ", valores ",
+                 extrair_texto_entre_parenteses(input$variavelY)),
+    style = list(fontSize = "20px", fontWeight = "bold")) |> 
+    highcharter::hc_plotOptions(
+      line = list(
+        connectNulls = TRUE
+                  )
+      )
+
+
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+output$tabela_Exp_Prod2024 <- DT::renderDT({
+  
+ ############# DADOS ################ 
+ncm_exportacao_agrupado <- dplyr::bind_rows(
+    #Maranhão
+    ncm_exportacao_reativo() |>
+      # ncm_exportacao |>
+      dplyr::filter(
+        no_uf == "Maranhão" 
+      ) |>
+      dplyr::group_by(ano, mes, nome_mes, uf = no_uf,  no_cuci_grupo) |>
+      dplyr::summarise(
+          valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
+          peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
+        .groups = "drop"
+      ),
+
+    #Nordeste
+    ncm_exportacao_reativo() |>
+      # ncm_exportacao |>
+      dplyr::filter(
+          no_regiao == "Nordeste"
+      ) |>
+      dplyr::group_by(ano, mes, nome_mes, uf = "Nordeste", no_cuci_grupo) |> # <--- uf = "Nordeste"
+      dplyr::summarise(
+         valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
+         peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
+        .groups = "drop"
+      ),
+
+    # Brasil
+    ncm_exportacao_reativo() |>
+      # ncm_exportacao |>
+      dplyr::group_by(ano, mes, nome_mes,uf = "Brasil",  no_cuci_grupo) |> # <--- uf = "Brasil"
+      dplyr::summarise(
+         valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
+         peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
+        .groups = "drop"
+      )
+  )
+
+lbls <- 
+  ncm_exportacao_agrupado |> 
+  dplyr::filter(ano == 2024 & 
+                  uf == input$SelecaoUF
+                  # uf == "Maranhão"
+                ) |> 
+  dplyr::group_by(no_cuci_grupo) |> 
+  dplyr::summarise(
+     valor_fob_dolar =  sum(valor_fob_dolar, na.rm = T),
+      peso_liquido_kg = sum(peso_liquido_kg, na.rm = T),
+    .groups = "drop"
+    ) |>   
+  dplyr::mutate(
+    var1 = dplyr::case_when(
+      input$variavelY == "Valor (em milhões de dólares)" ~ valor_fob_dolar,
+      TRUE ~ peso_liquido_kg
+      )
+    # var1 = valor_fob_dolar
+    ) |> 
+  dplyr::slice_max(var1, n = 8) |> 
+  dplyr::select(no_cuci_grupo) |> 
+  dplyr::pull()
+
+  
+exp_br_produtos2024 <- 
+  ncm_exportacao_agrupado |> 
+  dplyr::filter(ano == 2024 & no_cuci_grupo %in% lbls & 
+                uf == input$SelecaoUF
+                # uf == "Maranhão"
+                ) |> 
+  dplyr::group_by(nome_mes, no_cuci_grupo) |> 
+  dplyr::summarise(
+      valor_fob_dolar = sum(valor_fob_dolar, na.rm = T),
+      peso_liquido_kg = sum(peso_liquido_kg, na.rm = T),
+    .groups = "drop"
+    )
+
+
+exp_br_produtos2024 <- 
+exp_br_produtos2024 |>
+  tidyr::pivot_longer(
+    cols = c(valor_fob_dolar, peso_liquido_kg), # Seleciona as colunas com os valores
+    names_to = "fill", # Nome da nova coluna com os nomes das colunas originais
+    values_to = "valor" # Nome da nova coluna com os valores
+  ) |>
+  tidyr::pivot_wider(
+    id_cols = c(nome_mes, fill),
+    names_from = no_cuci_grupo,
+    values_from = valor # Usa a coluna "valor" para preencher as novas colunas
+  ) 
+
+
+# cat("Exportações Produtos Antes\n")
+# print(dplyr::glimpse(exp_br_produtos2024))
+#  
+# adicionando linha de total
+exp_br_produtos2024 <-
+exp_br_produtos2024 |> 
+  dplyr::filter(
+    fill ==
+      ifelse(input$variavelY == "Valor (em milhões de dólares)",
+            "valor_fob_dolar", "peso_liquido_kg")
+     # fill ==  "valor_fob_dolar"
+    ) |> 
+    janitor::adorn_totals(name = "Total") |> 
+    dplyr::select(!fill)
+
+
+
+  # Reordenar colunas baseado na linha 'Total'
+if ("Total" %in% exp_br_produtos2024$nome_mes) {
+  # Encontra a linha do Total
+  total_row_index <- which(exp_br_produtos2024$nome_mes == "Total")
+  
+  # Extrai os valores (excluindo a coluna nome_mes) e ordena
+  total_values <- exp_br_produtos2024[total_row_index, -1]
+  colunas_ordenadas <- names(total_values)[order(as.numeric(total_values), decreasing = TRUE)]
+  
+   exp_br_produtos2024 <- exp_br_produtos2024[, c("nome_mes", colunas_ordenadas)]
+
+   }
+
+# cat("Eportações Produtos Depois\n")
+# print(dplyr::glimpse(exp_br_produtos2024))
+
+######### TABELA ########################################
+  # Criando o título e a legenda
+  # Criando o título e a legenda
+  titulo <- htmltools::tags$caption(
+    style = 'caption-side: top; text-align: center; font-size: 20px; font-weight: bold;', # Título centralizado em cima
+    htmltools::tags$p("Os principais produtos exportados em 2024")
+  )
+  legenda <- htmltools::tags$caption(
+    style = 'caption-side: bottom; text-align: left;', # Legenda à esquerda embaixo
+    htmltools::tags$p("Fonte: Secretaria de Comércio Exterior - SECEX (2024)")
+  )
+
+  # Criando a lista de elementos HTML
+cabecalho <- htmltools::tagList(titulo, legenda)
+  
+exp_br_produtos2024 |>
+  DT::datatable(
+    options = list(
+      dom = 't', # Remove os controles de busca, paginação, etc.
+      pageLength = -1, # Mostra todas as linhas
+      initComplete = DT::JS(
+        "function(settings, json) {
+          $(this.api().table().header()).css({'background-color': '#74BBDC', 'color': '#fff'});
+        }"
+      )
+    ),
+    rownames = FALSE, # Remove os números das linhas
+    colnames = c("Mês", colnames(exp_br_produtos2024)[-1]), # Define os nomes das colunas
+    caption = cabecalho,
+    escape = FALSE # Permite HTML na tabela (para o rodapé estilizado)
+  ) |>
+  DT::formatCurrency(
+    columns = colnames(exp_br_produtos2024)[-1], # Formata todas as colunas menos a primeira
+    currency = "", mark = ".", dec.mark = ",", digits = 2
+  ) |>
+  DT::formatStyle(
+    columns = 0:ncol(exp_br_produtos2024), # Aplica o estilo a todas as colunas
+    target = "row",
+    backgroundColor = DT::styleEqual(seq(1, nrow(exp_br_produtos2024), 2), "#f2f2f2") # Cor de fundo alternada
+  ) |>
+  DT::formatStyle(
+    columns = 0:ncol(exp_br_produtos2024), # Aplica o estilo a todas as colunas
+    target = "row",
+    fontWeight = DT::styleEqual(nrow(exp_br_produtos2024), "bold") # Última linha em negrito
+  )  
+  })
+
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+output$destinos_2014_2024 <- highcharter::renderHighchart({
+  
+# cat("Print print(funcao_ncm_exportacao_agrupado(ncm_exportacao_reativo(), no_pais))\n")
+# print(funcao_ncm_exportacao_agrupado(ncm_exportacao_reativo(), no_pais))       
+        
+lbls_decada <- 
+  funcao_ncm_exportacao_agrupado(ncm_exportacao_reativo(), no_pais) |> 
+  dplyr::select(!c(mes, nome_mes)) |> 
+  dplyr::filter(
+    uf == input$SelecaoUF &
+    ano >= 2014 & ano <= 2024
+    ) |> 
+  dplyr::group_by(no_pais) |> 
+  dplyr::summarise(
+    valor_fob_dolar = sum(valor_fob_dolar),
+    peso_liquido_kg = sum(peso_liquido_kg),    .groups = "drop"
+    ) |>   
+  dplyr::mutate(
+    var1 = dplyr::case_when(
+              input$variavelY == "Valor (em milhões de dólares)" ~ valor_fob_dolar,
+                TRUE ~ peso_liquido_kg
+              )
+            # var1 = valor_fob_dolar
+           ) |>
+  dplyr::slice_max(var1, n = 5) |> 
+  dplyr::select(no_pais) |> 
+  dplyr::pull()
+
+
+# cat("Print lbls_decada\n")
+# print(lbls_decada)
+
+exp_pais_2014_2024 <- 
+ funcao_ncm_exportacao_agrupado(ncm_exportacao_reativo(), no_pais) |> 
+  select(!c(mes, nome_mes))|> 
+  dplyr::filter(
+    uf == input$SelecaoUF &
+    ano >= 2014 & ano <= 2024 & 
+    no_pais %in% lbls_decada
+      
+    ) |> 
+  dplyr::group_by(ano, no_pais) |> 
+  dplyr::summarise(
+    valor_fob_dolar = sum(valor_fob_dolar),
+    peso_liquido_kg = sum(peso_liquido_kg),    .groups = "drop"
+    ) |>   
+  dplyr::mutate(
+    var1 = dplyr::case_when(
+              input$variavelY == "Valor (em milhões de dólares)" ~ valor_fob_dolar,
+                TRUE ~ peso_liquido_kg
+              )
+            # var1 = valor_fob_dolar
+           ) 
+
+# cat("Print depois do slice_max\n")
+# print(exp_pais_2014_2024)
+# cat("Nome das colunas\n")
+# print(colnames(exp_pais_2014_2024))
+
+
+exp_pais_2014_2024 <- 
+        exp_pais_2014_2024 |>
+        dplyr::select(!var1) |> 
+        tidyr::pivot_longer(
+            cols = !c(no_pais, ano), # Seleciona as colunas com os valores
+            names_to = "fill", # Nome da nova coluna com os nomes das colunas originais
+            values_to = "valor" # Nome da nova coluna com os valores
+        ) |> 
+  dplyr::filter(
+    fill == ifelse(
+          input$variavelY == "Valor (em milhões de dólares)", "valor_fob_dolar", "peso_liquido_kg"
+          )
+  )
+
+
+# cat("Print de pivot_longer\n")
+# print(exp_pais_2014_2024)
+
+
+##### TOOLTIP
+tooltip <- list(
+        pointFormatter = highcharter::JS(
+          "function() {
+            return this.balanca + ': ' + Highcharts.numberFormat(this.y, 2, ',', '.');
+          }"
+        )
+      )
+
+
+highcharter::hchart(
+  exp_pais_2014_2024, "line", 
+  hcaes(x = ano, y = valor, group = no_pais),
+  tooltip = tooltip
+  ) |>
+  highcharter::hc_plotOptions(
+    line = list(lineWidth = 2.5, alpha = 0.7)
+  ) |>
+  highcharter::hc_xAxis(title = list(text = "Ano")) |>
+    highcharter::hc_yAxis(
+      title = list(text = "Valor"),
+      labels = list(formatter = highcharter::JS("function() {
+      return Highcharts.numberFormat(this.value, 0, ',', '.'); // Formata o valor com 0 casas decimais, separador decimal ',' e separador de milhares '.'
+    }"))
+    ) |>  
+  highcharter::hc_title(
+    text = paste("Os Principais Destinos das Exportações do ", 
+                 input$SelecaoUF, " entre 2014-2024, valores ",
+                 extrair_texto_entre_parenteses(input$variavelY)),
+    style = list(fontSize = "20px", fontWeight = "bold"))  
+
+
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+output$tabela_Imp_Prod2024 <- DT::renderDT({
+  
+ ############# DADOS ################ 
+ncm_importacao_agrupado <- dplyr::bind_rows(
+    #Maranhão
+    ncm_importacao_reativo() |>
+      # ncm_exportacao |>
+      dplyr::filter(
+        no_uf == "Maranhão" 
+      ) |>
+      dplyr::group_by(ano, mes, nome_mes, uf = no_uf,  no_cuci_grupo) |>
+      dplyr::summarise(
+          valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
+          peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
+        .groups = "drop"
+      ),
+
+    #Nordeste
+    ncm_importacao_reativo() |>
+      # ncm_exportacao |>
+      dplyr::filter(
+          no_regiao == "Nordeste"
+      ) |>
+      dplyr::group_by(ano, mes, nome_mes, uf = "Nordeste", no_cuci_grupo) |> # <--- uf = "Nordeste"
+      dplyr::summarise(
+         valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
+         peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
+        .groups = "drop"
+      ),
+
+    # Brasil
+    ncm_importacao_reativo() |>
+      # ncm_exportacao |>
+      dplyr::group_by(ano, mes, nome_mes,uf = "Brasil",  no_cuci_grupo) |> # <--- uf = "Brasil"
+      dplyr::summarise(
+         valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
+         peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
+        .groups = "drop"
+      )
+  )
+
+lbls <- 
+  ncm_importacao_agrupado |> 
+  dplyr::filter(ano == 2024 & 
+                  uf == input$SelecaoUF
+                  # uf == "Maranhão"
+                ) |> 
+  dplyr::group_by(no_cuci_grupo) |> 
+  dplyr::summarise(
+     valor_fob_dolar =  sum(valor_fob_dolar, na.rm = T),
+      peso_liquido_kg = sum(peso_liquido_kg, na.rm = T),
+    .groups = "drop"
+    ) |>   
+  dplyr::mutate(
+    var1 = dplyr::case_when(
+      input$variavelY == "Valor (em milhões de dólares)" ~ valor_fob_dolar,
+      TRUE ~ peso_liquido_kg
+      )
+    # var1 = valor_fob_dolar
+    ) |> 
+  dplyr::slice_max(var1, n = 8) |> 
+  dplyr::select(no_cuci_grupo) |> 
+  dplyr::pull()
+
+  
+imp_br_produtos2024 <- 
+  ncm_importacao_agrupado |> 
+  dplyr::filter(ano == 2024 & no_cuci_grupo %in% lbls & 
+                uf == input$SelecaoUF
+                # uf == "Maranhão"
+                ) |> 
+  dplyr::group_by(nome_mes, no_cuci_grupo) |> 
+  dplyr::summarise(
+      valor_fob_dolar = sum(valor_fob_dolar, na.rm = T),
+      peso_liquido_kg = sum(peso_liquido_kg, na.rm = T),
+    .groups = "drop"
+    )
+
+
+imp_br_produtos2024 <- 
+imp_br_produtos2024 |>
+  tidyr::pivot_longer(
+    cols = c(valor_fob_dolar, peso_liquido_kg), # Seleciona as colunas com os valores
+    names_to = "fill", # Nome da nova coluna com os nomes das colunas originais
+    values_to = "valor" # Nome da nova coluna com os valores
+  ) |>
+  tidyr::pivot_wider(
+    id_cols = c(nome_mes, fill),
+    names_from = no_cuci_grupo,
+    values_from = valor # Usa a coluna "valor" para preencher as novas colunas
+  ) 
+
+
+# cat("Importações Produtos Antes\n")
+# print(dplyr::glimpse(Imp_br_produtos2024))
+#  
+# adicionando linha de total
+imp_br_produtos2024 <-
+imp_br_produtos2024 |> 
+  dplyr::filter(
+    fill ==
+      ifelse(input$variavelY == "Valor (em milhões de dólares)",
+            "valor_fob_dolar", "peso_liquido_kg")
+     # fill ==  "valor_fob_dolar"
+    ) |> 
+    janitor::adorn_totals(name = "Total") |> 
+    dplyr::select(!fill)
+
+
+# Reordenar colunas baseado na linha 'Total'
+if ("Total" %in% imp_br_produtos2024$nome_mes) {
+  # Encontra a linha do Total
+  total_row_index <- which(imp_br_produtos2024$nome_mes == "Total")
+  
+  # Extrai os valores (excluindo a coluna nome_mes) e ordena
+  total_values <- imp_br_produtos2024[total_row_index, -1]
+  colunas_ordenadas <- names(total_values)[order(as.numeric(total_values), decreasing = TRUE)]
+  
+   imp_br_produtos2024 <- imp_br_produtos2024[, c("nome_mes", colunas_ordenadas)]
+
+   }
+# cat("Importações Produtos Depois\n")
+# print(dplyr::glimpse(imp_br_produtos2024))
+
+######### TABELA ########################################
+  # Criando o título e a legenda
+  # Criando o título e a legenda
+  titulo <- htmltools::tags$caption(
+    style = 'caption-side: top; text-align: center; font-size: 20px; font-weight: bold;', # Título centralizado em cima
+    htmltools::tags$p("Os principais produtos importados em 2024")
+  )
+  legenda <- htmltools::tags$caption(
+    style = 'caption-side: bottom; text-align: left;', # Legenda à esquerda embaixo
+    htmltools::tags$p("Fonte: Secretaria de Comércio Exterior - SECEX (2024)")
+  )
+
+  # Criando a lista de elementos HTML
+cabecalho <- htmltools::tagList(titulo, legenda)
+  
+imp_br_produtos2024 |>
+  DT::datatable(
+    options = list(
+      dom = 't', # Remove os controles de busca, paginação, etc.
+      pageLength = -1, # Mostra todas as linhas
+      initComplete = DT::JS(
+        "function(settings, json) {
+          $(this.api().table().header()).css({'background-color': '#74BBDC', 'color': '#fff'});
+        }"
+      )
+    ),
+    rownames = FALSE, # Remove os números das linhas
+    colnames = c("Mês", colnames(imp_br_produtos2024)[-1]), # Define os nomes das colunas
+    caption = cabecalho,
+    escape = FALSE # Permite HTML na tabela (para o rodapé estilizado)
+  ) |>
+  DT::formatCurrency(
+    columns = colnames(imp_br_produtos2024)[-1], # Formata todas as colunas menos a primeira
+    currency = "", mark = ".", dec.mark = ",", digits = 2
+  ) |>
+  DT::formatStyle(
+    columns = 0:ncol(imp_br_produtos2024), # Aplica o estilo a todas as colunas
+    target = "row",
+    backgroundColor = DT::styleEqual(seq(1, nrow(imp_br_produtos2024), 2), "#f2f2f2") # Cor de fundo alternada
+  ) |>
+  DT::formatStyle(
+    columns = 0:ncol(imp_br_produtos2024), # Aplica o estilo a todas as colunas
+    target = "row",
+    fontWeight = DT::styleEqual(nrow(imp_br_produtos2024), "bold") # Última linha em negrito
+  )  
+  })
+
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+  output$id_map <- leaflet::renderLeaflet({
+    leaflet::leaflet() |>
+      leaflet::addTiles() |>
+      leaflet::setView(lng = -44.36672, lat = -2.57678, zoom = 15) |>
+      leaflet::addProviderTiles(providers$Esri.WorldImagery) |>
+     leaflet::addMiniMap(width = 100, height = 100, zoomLevelOffset = -5, zoomAnimation = TRUE, toggleDisplay = TRUE)
+  })
+
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+output$origens_2014_2024 <- highcharter::renderHighchart({
+  
+
+# cat("Print print(funcao_ncm_importacao_agrupado(ncm_importacao_reativo(), no_pais))\n")
+# print(funcao_ncm_importacao_agrupado(ncm_importacao_reativo(), no_pais))       
+        
+lbls_decada <- 
+  funcao_ncm_importacao_agrupado(ncm_importacao_reativo(), no_pais) |> 
+  dplyr::select(!c(mes, nome_mes)) |> 
+  dplyr::filter(
+    uf == input$SelecaoUF &
+    ano >= 2014 & ano <= 2024
+    ) |> 
+  dplyr::group_by(no_pais) |> 
+  dplyr::summarise(
+    valor_fob_dolar = sum(valor_fob_dolar),
+    peso_liquido_kg = sum(peso_liquido_kg),    .groups = "drop"
+    ) |>   
+  dplyr::mutate(
+    var1 = dplyr::case_when(
+              input$variavelY == "Valor (em milhões de dólares)" ~ valor_fob_dolar,
+                TRUE ~ peso_liquido_kg
+              )
+            # var1 = valor_fob_dolar
+           ) |>
+  dplyr::slice_max(var1, n = 5) |> 
+  dplyr::select(no_pais) |> 
+  dplyr::pull()
+
+
+# cat("Print lbls_decada\n")
+# print(lbls_decada)
+
+
+imp_pais_2014_2024 <- 
+ funcao_ncm_importacao_agrupado(ncm_importacao_reativo(), no_pais) |> 
+  select(!c(mes, nome_mes))|> 
+  dplyr::filter(
+    uf == input$SelecaoUF &
+    ano >= 2014 & ano <= 2024 & 
+    no_pais %in% lbls_decada
+      
+    ) |> 
+  dplyr::group_by(ano, no_pais) |> 
+  dplyr::summarise(
+    valor_fob_dolar = sum(valor_fob_dolar),
+    peso_liquido_kg = sum(peso_liquido_kg),    .groups = "drop"
+    ) |>   
+  dplyr::mutate(
+    var1 = dplyr::case_when(
+              input$variavelY == "Valor (em milhões de dólares)" ~ valor_fob_dolar,
+                TRUE ~ peso_liquido_kg
+              )
+            # var1 = valor_fob_dolar
+           ) 
+
+# cat("Print depois do slice_max\n")
+# print(imp_pais_2014_2024)
+# cat("Nome das colunas\n")
+# print(colnames(imp_pais_2014_2024))
+
+
+imp_pais_2014_2024 <- 
+        imp_pais_2014_2024 |>
+        dplyr::select(!var1) |> 
+        tidyr::pivot_longer(
+            cols = !c(no_pais, ano), # Seleciona as colunas com os valores
+            names_to = "fill", # Nome da nova coluna com os nomes das colunas originais
+            values_to = "valor" # Nome da nova coluna com os valores
+        ) |> 
+  dplyr::filter(
+    fill == ifelse(
+          input$variavelY == "Valor (em milhões de dólares)", "valor_fob_dolar", "peso_liquido_kg"
+          )
+  )
+
+
+# cat("Print de pivot_longer\n")
+# print(imp_pais_2014_2024)
+
+
+##### TOOLTIP
+tooltip <- list(
+        pointFormatter = highcharter::JS(
+          "function() {
+            return this.balanca + ': ' + Highcharts.numberFormat(this.y, 2, ',', '.');
+          }"
+        )
+      )
+
+
+highcharter::hchart(
+  imp_pais_2014_2024, "line", 
+  hcaes(x = ano, y = valor, group = no_pais),
+  tooltip = tooltip
+  ) |>
+  highcharter::hc_plotOptions(
+    line = list(lineWidth = 2.5, alpha = 0.7)
+  ) |>
+  highcharter::hc_xAxis(title = list(text = "Ano")) |>
+    highcharter::hc_yAxis(
+      title = list(text = "Valor"),
+      labels = list(formatter = highcharter::JS("function() {
+      return Highcharts.numberFormat(this.value, 0, ',', '.'); // Formata o valor com 0 casas decimais, separador decimal ',' e separador de milhares '.'
+    }"))
+    ) |>
+  highcharter::hc_title(
+    text = paste("As Principais Origens das Importaçõs do ", 
+                 input$SelecaoUF, " entre 2014-2024, valores ",
+                 extrair_texto_entre_parenteses(input$variavelY)),
+    style = list(fontSize = "20px", fontWeight = "bold")) 
+
+
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server-extras">
+ojs_define <- function(..., .session = shiny::getDefaultReactiveDomain()) {
+  quos <- rlang::enquos(...)
+  vars <- rlang::list2(...)
+  nm <- names(vars)
+  if (is.null(nm)) {
+    nm <- rep_len("", length(vars))
+  }
+  mapply(function(q, nm, val) {
+    # Infer name, if possible
+    if (nm == "") {
+      tryCatch({
+        nm <- rlang::as_name(q)
+      }, error = function(e) {
+        code <- paste(collapse = "\n", deparse(rlang::f_rhs(q)))
+        stop("ojs_define() could not create a name for the argument: ", code)
+      })
+    }
+    .session$output[[nm]] <- val
+    outputOptions(.session$output, nm, suspendWhenHidden = FALSE)
+    .session$sendCustomMessage("ojs-export", list(name = nm))
+    NULL
+  }, quos, nm, vars, SIMPLIFY = FALSE, USE.NAMES = FALSE)
+  invisible()
+}
+</script>
+</p>
+<!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="dependencies">
+{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["selectize"]},{"type":"character","attributes":{},"value":["0.15.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www/shared/selectize"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/selectize.min.js","accessibility/js/selectize-plugin-a11y.min.js"]},{"type":"character","attributes":{},"value":["css/selectize.bootstrap3.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["shiny"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.10.0"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["selectize"]},{"type":"character","attributes":{},"value":["0.15.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www/shared/selectize"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/selectize.min.js","accessibility/js/selectize-plugin-a11y.min.js"]},{"type":"character","attributes":{},"value":["css/selectize.bootstrap3.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["shiny"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.10.0"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmltools-fill"]},{"type":"character","attributes":{},"value":["0.5.8.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["fill"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["fill.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmltools"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.5.8.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"character","attributes":{},"value":["1.6.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.6.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["datatables-css"]},{"type":"character","attributes":{},"value":["0.0.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/css"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["datatables-crosstalk.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["DT"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.33"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["datatables-binding"]},{"type":"character","attributes":{},"value":["0.33"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["datatables.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["DT"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.33"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["3.5.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["crosstalk"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["crosstalk"]},{"type":"character","attributes":{},"value":["1.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/crosstalk.min.js"]},{"type":"character","attributes":{},"value":["css/crosstalk.min.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["crosstalk"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmltools-fill"]},{"type":"character","attributes":{},"value":["0.5.8.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["fill"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["fill.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmltools"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.5.8.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"character","attributes":{},"value":["1.6.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.6.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["3.5.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["proj4js"]},{"type":"character","attributes":{},"value":["2.3.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/proj4js"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["proj4.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highcharts"]},{"type":"character","attributes":{},"value":["9.3.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/highcharts"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharts.js","highcharts-3d.js","highcharts-more.js","modules/stock.js","modules/map.js","modules/data.js","modules/exporting.js","modules/offline-exporting.js","modules/drilldown.js","modules/item-series.js","modules/overlapping-datalabels.js","modules/annotations.js","modules/export-data.js","modules/funnel.js","modules/heatmap.js","modules/treemap.js","modules/sankey.js","modules/dependency-wheel.js","modules/organization.js","modules/solid-gauge.js","modules/streamgraph.js","modules/sunburst.js","modules/vector.js","modules/wordcloud.js","modules/xrange.js","modules/tilemap.js","modules/venn.js","modules/gantt.js","modules/timeline.js","modules/parallel-coordinates.js","modules/bullet.js","modules/coloraxis.js","modules/dumbbell.js","modules/lollipop.js","modules/series-label.js","plugins/motion.js","custom/reset.js","modules/boost.js"]},{"type":"character","attributes":{},"value":["css/motion.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highchart-binding"]},{"type":"character","attributes":{},"value":["0.9.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highchart.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmltools-fill"]},{"type":"character","attributes":{},"value":["0.5.8.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["fill"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["fill.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmltools"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.5.8.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"character","attributes":{},"value":["1.6.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.6.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["3.5.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["proj4js"]},{"type":"character","attributes":{},"value":["2.3.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/proj4js"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["proj4.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highcharts"]},{"type":"character","attributes":{},"value":["9.3.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/highcharts"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharts.js","highcharts-3d.js","highcharts-more.js","modules/stock.js","modules/map.js","modules/data.js","modules/exporting.js","modules/offline-exporting.js","modules/drilldown.js","modules/item-series.js","modules/overlapping-datalabels.js","modules/annotations.js","modules/export-data.js","modules/funnel.js","modules/heatmap.js","modules/treemap.js","modules/sankey.js","modules/dependency-wheel.js","modules/organization.js","modules/solid-gauge.js","modules/streamgraph.js","modules/sunburst.js","modules/vector.js","modules/wordcloud.js","modules/xrange.js","modules/tilemap.js","modules/venn.js","modules/gantt.js","modules/timeline.js","modules/parallel-coordinates.js","modules/bullet.js","modules/coloraxis.js","modules/dumbbell.js","modules/lollipop.js","modules/series-label.js","plugins/motion.js","custom/reset.js","modules/boost.js"]},{"type":"character","attributes":{},"value":["css/motion.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highchart-binding"]},{"type":"character","attributes":{},"value":["0.9.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highchart.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmltools-fill"]},{"type":"character","attributes":{},"value":["0.5.8.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["fill"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["fill.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmltools"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.5.8.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"character","attributes":{},"value":["1.6.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.6.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["datatables-css"]},{"type":"character","attributes":{},"value":["0.0.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/css"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["datatables-crosstalk.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["DT"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.33"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["datatables-binding"]},{"type":"character","attributes":{},"value":["0.33"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["datatables.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["DT"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.33"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["3.5.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["crosstalk"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["crosstalk"]},{"type":"character","attributes":{},"value":["1.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/crosstalk.min.js"]},{"type":"character","attributes":{},"value":["css/crosstalk.min.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["crosstalk"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmltools-fill"]},{"type":"character","attributes":{},"value":["0.5.8.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["fill"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["fill.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmltools"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.5.8.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"character","attributes":{},"value":["1.6.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.6.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["3.5.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["proj4js"]},{"type":"character","attributes":{},"value":["2.3.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/proj4js"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["proj4.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highcharts"]},{"type":"character","attributes":{},"value":["9.3.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/highcharts"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharts.js","highcharts-3d.js","highcharts-more.js","modules/stock.js","modules/map.js","modules/data.js","modules/exporting.js","modules/offline-exporting.js","modules/drilldown.js","modules/item-series.js","modules/overlapping-datalabels.js","modules/annotations.js","modules/export-data.js","modules/funnel.js","modules/heatmap.js","modules/treemap.js","modules/sankey.js","modules/dependency-wheel.js","modules/organization.js","modules/solid-gauge.js","modules/streamgraph.js","modules/sunburst.js","modules/vector.js","modules/wordcloud.js","modules/xrange.js","modules/tilemap.js","modules/venn.js","modules/gantt.js","modules/timeline.js","modules/parallel-coordinates.js","modules/bullet.js","modules/coloraxis.js","modules/dumbbell.js","modules/lollipop.js","modules/series-label.js","plugins/motion.js","custom/reset.js","modules/boost.js"]},{"type":"character","attributes":{},"value":["css/motion.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highchart-binding"]},{"type":"character","attributes":{},"value":["0.9.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highchart.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmltools-fill"]},{"type":"character","attributes":{},"value":["0.5.8.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["fill"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["fill.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmltools"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.5.8.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"character","attributes":{},"value":["1.6.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.6.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["datatables-css"]},{"type":"character","attributes":{},"value":["0.0.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/css"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["datatables-crosstalk.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["DT"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.33"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["datatables-binding"]},{"type":"character","attributes":{},"value":["0.33"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["datatables.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["DT"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.33"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["3.5.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["crosstalk"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["crosstalk"]},{"type":"character","attributes":{},"value":["1.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/crosstalk.min.js"]},{"type":"character","attributes":{},"value":["css/crosstalk.min.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["crosstalk"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmltools-fill"]},{"type":"character","attributes":{},"value":["0.5.8.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["fill"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["fill.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmltools"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.5.8.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"character","attributes":{},"value":["1.6.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.6.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["3.5.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["proj4js"]},{"type":"character","attributes":{},"value":["2.3.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/proj4js"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["proj4.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highcharts"]},{"type":"character","attributes":{},"value":["9.3.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/highcharts"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharts.js","highcharts-3d.js","highcharts-more.js","modules/stock.js","modules/map.js","modules/data.js","modules/exporting.js","modules/offline-exporting.js","modules/drilldown.js","modules/item-series.js","modules/overlapping-datalabels.js","modules/annotations.js","modules/export-data.js","modules/funnel.js","modules/heatmap.js","modules/treemap.js","modules/sankey.js","modules/dependency-wheel.js","modules/organization.js","modules/solid-gauge.js","modules/streamgraph.js","modules/sunburst.js","modules/vector.js","modules/wordcloud.js","modules/xrange.js","modules/tilemap.js","modules/venn.js","modules/gantt.js","modules/timeline.js","modules/parallel-coordinates.js","modules/bullet.js","modules/coloraxis.js","modules/dumbbell.js","modules/lollipop.js","modules/series-label.js","plugins/motion.js","custom/reset.js","modules/boost.js"]},{"type":"character","attributes":{},"value":["css/motion.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highchart-binding"]},{"type":"character","attributes":{},"value":["0.9.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highchart.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["highcharter"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.9.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmltools-fill"]},{"type":"character","attributes":{},"value":["0.5.8.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["fill"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["fill.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmltools"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.5.8.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"character","attributes":{},"value":["1.6.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.6.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["3.6.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/3.6.0"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery-3.6.0.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquerylib"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.1.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["leaflet"]},{"type":"character","attributes":{},"value":["1.3.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/leaflet"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["leaflet.js"]},{"type":"character","attributes":{},"value":["leaflet.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["leaflet"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.2.2"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["leafletfix"]},{"type":"character","attributes":{},"value":["1.0.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/leafletfix"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["leafletfix.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["leaflet"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.2.2"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["proj4"]},{"type":"character","attributes":{},"value":["2.6.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/plugins/Proj4Leaflet"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["proj4.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["leaflet"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["2.2.2"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["Proj4Leaflet"]},{"type":"character","attributes":{},"value":["1.0.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/plugins/Proj4Leaflet"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["proj4leaflet.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["leaflet"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["2.2.2"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["rstudio_leaflet"]},{"type":"character","attributes":{},"value":["1.3.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/rstudio_leaflet"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rstudio_leaflet.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["leaflet"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.2.2"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["leaflet-binding"]},{"type":"character","attributes":{},"value":["2.2.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/assets"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["leaflet.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["leaflet"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["2.2.2"]}]}]}
+</script>
+<!--/html_preserve-->
+<!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="execution_dependencies">
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69]}},"value":[{"type":"character","attributes":{},"value":["assertthat","backports","base","broom","bslib","cachem","cli","compiler","crosstalk","curl","data.table","datasets","digest","dplyr","DT","evaluate","fastmap","generics","glue","graphics","grDevices","grid","highcharter","htmltools","htmlwidgets","httpuv","igraph","jquerylib","jsonlite","knitr","later","lattice","leaflet","leaflet.providers","lifecycle","lubridate","magrittr","memoise","methods","mime","pillar","pkgconfig","promises","purrr","quantmod","R6","Rcpp","renv","rlang","rlist","rmarkdown","sass","shiny","stats","stringi","stringr","tibble","tidyr","tidyselect","timechange","tools","TTR","utils","vctrs","xfun","xtable","xts","yaml","zoo"]},{"type":"character","attributes":{},"value":["0.2.1","1.5.0","4.4.2","1.0.7","0.9.0","1.1.0","3.6.3","4.4.2","1.2.1","6.2.0","1.16.4","4.4.2","0.6.37","1.1.4","0.33","1.0.3","1.2.0","0.1.3","1.8.0","4.4.2","4.4.2","4.4.2","0.9.4","0.5.8.1","1.6.4","1.6.15","2.1.4","0.1.4","1.8.9","1.49","1.4.1","0.22-6","2.2.2","2.0.0","1.0.4","1.9.4","2.0.3","2.0.1","4.4.2","0.12","1.10.1","2.0.3","1.3.2","1.0.2","0.4.26","2.5.1","1.0.14","1.0.11","1.1.5","0.4.6.2","2.29","0.4.9","1.10.0","4.4.2","1.8.4","1.5.1","3.2.1","1.3.1","1.2.1","0.3.0","4.4.2","0.24.4","4.4.2","0.6.5","0.50","1.8-4","0.14.1","2.3.10","1.8-12"]}]}]}
+</script>
+<!--/html_preserve-->
+
+
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /container fluid -->
+
+<script type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (_event) {
+  if (window.bslib.Card) {
+    window.bslib.Card.initializeAllCards();
+  }
+}); 
+</script>
+  
+
+
+
+</body></html>
