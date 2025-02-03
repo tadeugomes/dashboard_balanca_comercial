@@ -21,7 +21,7 @@ library(highcharter)
 library(arrow)
 library(dplyr)
 library(memoise)
-
+library(stringr)
 ```
 
 
@@ -139,10 +139,6 @@ leaflet::leafletOutput("id_map")
 #| context: server
 #| label: "lendo_dados"
 
-library(arrow)
-library(dplyr)
-library(stringr)
-
 # 1. Configuração inicial
 if (!dir.exists("dados")) {
   dir.create("dados", showWarnings = FALSE)
@@ -208,9 +204,7 @@ knitr::opts_chunk$set(
 #| context: server
 #| label: "dados_reativos"
 
-library(arrow)
-library(dplyr)
-library(stringr)
+
 
 # 1. Função para carregar e processar dados de exportação
 m_exportacao_reativo <- reactive({
