@@ -173,176 +173,114 @@ knitr::opts_chunk$set(
 #| label: "dados_reativos"
 
 
-# 1. Função para carregar e processar dados de exportação
-m_exportacao_reativo <- reactive({
-  # Definir schema para garantir consistência
-  schema <- schema(
-    no_pais = string(),
-    no_bloco = string(),
-    sigla_uf = string(),
-    no_uf = string(),
-    no_regiao = string(),
-    no_mun_min = string(),
-    ano = int64(),
-    mes = int64(),
-    peso_liquido_kg = float64(),
-    valor_fob_dolar = float64()
-  )
-  
-  # Carregar dados
-  dados <- open_dataset("dados/m_exportacao_agrupado.parquet", schema = schema) |>
-    collect() |>
-    mutate(
-      nome_mes = nome_mes(mes),  # Função auxiliar para converter números em meses
-      nome_mes = factor(nome_mes, levels = c("jan.", "fev.", "mar.", "abr.", "maio", "jun.",
-                                             "jul.", "ago.", "set.", "out.", "nov.", "dez.")),
-      no_pais = if_else(no_pais == "Países Baixos (Holanda)", "Holanda", no_pais),
-      valor_fob_dolar = valor_fob_dolar / 1e6,  # Converter para milhões
-      peso_liquido_kg = peso_liquido_kg / 1e9   # Converter para bilhões
-    ) |>
-    mutate(
-      across(where(is.character), ~ coalesce(.x, "")),  # Substituir NA em colunas de texto
-      across(where(is.numeric), ~ coalesce(.x, 0))      # Substituir NA em colunas numéricas
-    ) |>
-    mutate(
-      no_regiao = case_when(
-        no_regiao == "REGIAO NORDESTE" ~ "Nordeste",
-        no_regiao == "REGIAO SUDESTE" ~ "Sudeste",
-        no_regiao == "REGIAO SUL" ~ "Sul",
-        no_regiao == "REGIAO NORTE" ~ "Norte",
-        no_regiao == "REGIAO CENTRO OESTE" ~ "Centro-Oeste",
-        TRUE ~ "Não Declarada"
-      )
-    )
-  
-  return(dados)
-})
+# Função para carregar dados de forma eficiente com memoise
+carregar_dados <- memoise::memoise(function(nome_arquivo) {
+  # Lista de arquivos permitidos
+  nomes_arquivos <- c("ncm_exportacao", "ncm_importacao", "m_exportacao", "m_importacao")
 
-# 2. Função para carregar e processar dados de importação
-m_importacao_reativo <- reactive({
-  schema <- schema(
-    no_pais = string(),
-    no_bloco = string(),
-    sigla_uf = string(),
-    no_uf = string(),
-    no_regiao = string(),
-    no_mun_min = string(),
-    ano = int64(),
-    mes = int64(),
-    peso_liquido_kg = float64(),
-    valor_fob_dolar = float64()
-  )
-  
-  dados <- open_dataset("dados/m_importacao_agrupado.parquet", schema = schema) |>
-    collect() |>
-    mutate(
-      nome_mes = nome_mes(mes),
-      nome_mes = factor(nome_mes, levels = c("jan.", "fev.", "mar.", "abr.", "maio", "jun.",
-                                             "jul.", "ago.", "set.", "out.", "nov.", "dez.")),
-      no_pais = if_else(no_pais == "Países Baixos (Holanda)", "Holanda", no_pais),
-      valor_fob_dolar = valor_fob_dolar / 1e6,
-      peso_liquido_kg = peso_liquido_kg / 1e9
-    ) |>
-    mutate(
-      across(where(is.character), ~ coalesce(.x, "")),
-      across(where(is.numeric), ~ coalesce(.x, 0))
-    ) |>
-    mutate(
-      no_regiao = case_when(
-        no_regiao == "REGIAO NORDESTE" ~ "Nordeste",
-        no_regiao == "REGIAO SUDESTE" ~ "Sudeste",
-        no_regiao == "REGIAO SUL" ~ "Sul",
-        no_regiao == "REGIAO NORTE" ~ "Norte",
-        no_regiao == "REGIAO CENTRO OESTE" ~ "Centro-Oeste",
-        TRUE ~ "Não Declarada"
-      )
-    )
-  
-  return(dados)
-})
-
-# 3. Função para criar dados acumulados
-criar_acumulado <- function(m_exportacao, m_importacao, variavelY) {
-  # Função auxiliar para agrupar e resumir dados
-  processar_dados <- function(dados, uf) {
-    dados |>
-      filter(no_uf == uf | no_regiao == uf | uf == "Brasil") |>
-      group_by(ano, mes, nome_mes, uf = uf) |>
-      summarise(
-        valor = if (variavelY == "Valor (em milhões de dólares)") {
-          sum(valor_fob_dolar, na.rm = TRUE)
-        } else {
-          sum(peso_liquido_kg, na.rm = TRUE)
-        },
-        .groups = "drop"
-      )
+  # Validação do nome do arquivo
+  if (!(nome_arquivo %in% nomes_arquivos)) {
+    stop(paste0("Nome de arquivo inválido. Escolha entre: ", paste(nomes_arquivos, collapse = ", ")))
   }
-  
-  # Processar exportações e importações
-  exportacoes <- bind_rows(
-    processar_dados(m_exportacao(), "Maranhão"),
-    processar_dados(m_exportacao(), "Nordeste"),
-    processar_dados(m_exportacao(), "Brasil")
+
+  # Caminho do arquivo
+  caminho_arquivo <- file.path("dados", paste0(nome_arquivo, ".parquet"))
+
+  # Leitura segura com tratamento de erros
+  tryCatch({
+    dados <- arrow::read_parquet(
+      caminho_arquivo,
+      col_select = dplyr::everything() # Seleciona todas as colunas
+    )
+
+    # Transformações específicas para arquivos NCM
+    if (stringr::str_starts(nome_arquivo, "ncm_")) {
+      dados <- dados |>
+        dplyr::mutate(no_cuci_sec = stringr::str_to_title(no_cuci_sec)) # Padroniza o título
+    }
+
+    return(dados)
+  }, error = function(e) {
+    message("Erro ao ler o arquivo ", nome_arquivo, ": ", e$message)
+    return(NULL) # Retorna NULL em caso de erro
+  })
+})
+
+# Função para processar dados de comércio exterior
+processar_dados_comercio <- function(dados, uf, tipo, variavelY) {
+  dados |>
+    dplyr::filter(no_uf == uf | no_regiao == uf | uf == "Brasil") |>
+    dplyr::group_by(ano, mes, nome_mes, uf = uf) |>
+    dplyr::summarise(
+      valor = if (variavelY == "Valor (em milhões de dólares)") {
+        sum(valor_fob_dolar, na.rm = TRUE)
+      } else {
+        sum(peso_liquido_kg, na.rm = TRUE)
+      },
+      .groups = "drop"
+    )
+}
+
+# Função para calcular dados acumulados
+calcular_acumulado <- function(dados_exportacao, dados_importacao, variavelY) {
+  exportacoes <- dplyr::bind_rows(
+    processar_dados_comercio(dados_exportacao, "Maranhão", "exportacao", variavelY),
+    processar_dados_comercio(dados_exportacao, "Nordeste", "exportacao", variavelY),
+    processar_dados_comercio(dados_exportacao, "Brasil", "exportacao", variavelY)
   ) |>
-    rename(exp_valor = valor)
-  
-  importacoes <- bind_rows(
-    processar_dados(m_importacao(), "Maranhão"),
-    processar_dados(m_importacao(), "Nordeste"),
-    processar_dados(m_importacao(), "Brasil")
+    dplyr::rename(exp_valor = valor)
+
+  importacoes <- dplyr::bind_rows(
+    processar_dados_comercio(dados_importacao, "Maranhão", "importacao", variavelY),
+    processar_dados_comercio(dados_importacao, "Nordeste", "importacao", variavelY),
+    processar_dados_comercio(dados_importacao, "Brasil", "importacao", variavelY)
   ) |>
-    rename(imp_valor = valor)
-  
-  # Juntar dados e calcular saldo e corrente
+    dplyr::rename(imp_valor = valor)
+
   acumulado <- exportacoes |>
-    left_join(importacoes, by = c("ano", "mes", "nome_mes", "uf")) |>
-    mutate(
+    dplyr::left_join(importacoes, by = c("ano", "mes", "nome_mes", "uf")) |>
+    dplyr::mutate(
       saldo = exp_valor - imp_valor,
       corrente = exp_valor + imp_valor
     )
-  
+
   return(acumulado)
 }
 
-# 4. Objeto reativo para dados acumulados
-acumulado_reativo <- reactive({
-  criar_acumulado(m_exportacao_reativo, m_importacao_reativo, input$variavelY)
-})
-
-# 5. Função para carregar dados NCM
-ncm_data_loader <- function(tipo) {
-  schema <- schema(
-    no_pais = string(),
-    no_bloco = string(),
-    sigla_uf_ncm = string(),
-    no_uf = string(),
-    no_regiao = string(),
-    no_via = string(),
-    no_urf = string(),
-    no_cuci_grupo = string(),
-    no_cgce_n1 = string(),
-    ano = int64(),
-    mes = int64(),
-    peso_liquido_kg = float64(),
-    valor_fob_dolar = float64()
+# Função para carregar dados NCM com memoise
+carregar_dados_ncm <- memoise::memoise(function(tipo) {
+  schema <- arrow::schema(
+    no_pais = arrow::string(),
+    no_bloco = arrow::string(),
+    sigla_uf_ncm = arrow::string(),
+    no_uf = arrow::string(),
+    no_regiao = arrow::string(),
+    no_via = arrow::string(),
+    no_urf = arrow::string(),
+    no_cuci_grupo = arrow::string(),
+    no_cgce_n1 = arrow::string(),
+    ano = arrow::int64(),
+    mes = arrow::int64(),
+    peso_liquido_kg = arrow::float64(),
+    valor_fob_dolar = arrow::float64()
   )
-  
+
   open_dataset(paste0("dados/ncm_", tipo, "_agrupado.parquet"), schema = schema) |>
     collect() |>
-    mutate(
+    dplyr::mutate(
       nome_mes = nome_mes(mes),
       nome_mes = factor(nome_mes, levels = c("jan.", "fev.", "mar.", "abr.", "maio", "jun.",
                                              "jul.", "ago.", "set.", "out.", "nov.", "dez.")),
-      no_pais = if_else(no_pais == "Países Baixos (Holanda)", "Holanda", no_pais),
+      no_pais = dplyr::if_else(no_pais == "Países Baixos (Holanda)", "Holanda", no_pais),
       valor_fob_dolar = valor_fob_dolar / 1e6,
       peso_liquido_kg = peso_liquido_kg / 1e9
     ) |>
-    mutate(
-      across(where(is.character), ~ coalesce(.x, "")),
-      across(where(is.numeric), ~ coalesce(.x, 0))
+    dplyr::mutate(
+      across(where(is.character), ~coalesce(.x, "")),
+      across(where(is.numeric), ~coalesce(.x, 0))
     ) |>
-    mutate(
-      no_regiao = case_when(
+    dplyr::mutate(
+      no_regiao = dplyr::case_when(
         no_regiao == "REGIAO NORDESTE" ~ "Nordeste",
         no_regiao == "REGIAO SUDESTE" ~ "Sudeste",
         no_regiao == "REGIAO SUL" ~ "Sul",
@@ -351,16 +289,81 @@ ncm_data_loader <- function(tipo) {
         TRUE ~ "Não Declarada"
       )
     )
-}
+})
 
-# 6. Objetos reativos para dados NCM
-ncm_exportacao_reativo <- reactive(ncm_data_loader("exportacao"))
-ncm_importacao_reativo <- reactive(ncm_data_loader("importacao"))
+# Objetos reativos para dados de exportação e importação
+dados_exportacao_reativo <- reactive({
+  carregar_dados("m_exportacao_agrupado") |>
+    dplyr::mutate(
+      nome_mes = nome_mes(mes), # Função auxiliar para converter números em meses
+      nome_mes = factor(nome_mes, levels = c("jan.", "fev.", "mar.", "abr.", "maio", "jun.",
+                                             "jul.", "ago.", "set.", "out.", "nov.", "dez.")),
+      no_pais = dplyr::if_else(no_pais == "Países Baixos (Holanda)", "Holanda", no_pais),
+      valor_fob_dolar = valor_fob_dolar / 1e6, # Converter para milhões
+      peso_liquido_kg = peso_liquido_kg / 1e9 # Converter para bilhões
+    ) |>
+    dplyr::mutate(
+      across(where(is.character), ~coalesce(.x, "")), # Substituir NA em colunas de texto
+      across(where(is.numeric), ~coalesce(.x, 0)) # Substituir NA em colunas numéricas
+    ) |>
+    dplyr::mutate(
+      no_regiao = dplyr::case_when(
+        no_regiao == "REGIAO NORDESTE" ~ "Nordeste",
+        no_regiao == "REGIAO SUDESTE" ~ "Sudeste",
+        no_regiao == "REGIAO SUL" ~ "Sul",
+        no_regiao == "REGIAO NORTE" ~ "Norte",
+        no_regiao == "REGIAO CENTRO OESTE" ~ "Centro-Oeste",
+        TRUE ~ "Não Declarada"
+      )
+    )
+})
 
-# 7. Função auxiliar para extrair texto entre parênteses
+dados_importacao_reativo <- reactive({
+  carregar_dados("m_importacao_agrupado") |>
+    dplyr::mutate(
+      nome_mes = nome_mes(mes),
+      nome_mes = factor(nome_mes, levels = c("jan.", "fev.", "mar.", "abr.", "maio", "jun.",
+                                             "jul.", "ago.", "set.", "out.", "nov.", "dez.")),
+      no_pais = dplyr::if_else(no_pais == "Países Baixos (Holanda)", "Holanda", no_pais),
+      valor_fob_dolar = valor_fob_dolar /  1e6,
+      peso_liquido_kg = peso_liquido_kg / 1e9
+    ) |>
+    dplyr::mutate(
+      across(where(is.character), ~coalesce(.x, "")),
+      across(where(is.numeric), ~coalesce(.x, 0))
+    ) |>
+    dplyr::mutate(
+      no_regiao = dplyr::case_when(
+        no_regiao == "REGIAO NORDESTE" ~ "Nordeste",
+        no_regiao == "REGIAO SUDESTE" ~ "Sudeste",
+        no_regiao == "REGIAO SUL" ~ "Sul",
+        no_regiao == "REGIAO NORTE" ~ "Norte",
+        no_regiao == "REGIAO CENTRO OESTE" ~ "Centro-Oeste",
+        TRUE ~ "Não Declarada"
+      )
+    )
+})
+
+
+# Objeto reativo para dados acumulados
+acumulado_reativo <- reactive({
+  calcular_acumulado(dados_exportacao_reativo, dados_importacao_reativo, input$variavelY)
+})
+
+# Objetos reativos para dados NCM
+dados_ncm_exportacao_reativo <- reactive({
+  carregar_dados_ncm("exportacao_agrupado")
+})
+
+dados_ncm_importacao_reativo <- reactive({
+  carregar_dados_ncm("importacao__agrupado")
+})
+
+# Função auxiliar para extrair texto entre parênteses
 extrair_texto_entre_parenteses <- function(texto) {
-  str_extract_all(texto, "(?<=\\().*?(?=\\))")[[1]]
+  stringr::str_extract_all(texto, "(?<=\\().*?(?=\\))")
 }
+
 ```
 
 
