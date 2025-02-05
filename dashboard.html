@@ -342,7 +342,7 @@ knitr::opts_chunk$set(
  
 <script type="application/shiny-prerendered" data-context="server">
 # 5. Função para carregar dados NCM
-ncm_data_loader <- function(tipo) {
+ncm_data_loader <- function(tipo, uf) {
   schema <- schema(
     no_pais = string(),
     no_bloco = string(),
@@ -361,12 +361,13 @@ ncm_data_loader <- function(tipo) {
     paste0("dados/ncm_", tipo, "_agrupado.parquet"), 
     schema = schema
     ) |>
+    filter(no_uf == uf | no_regiao == uf | uf == "Brasil") |> 
     collect() 
 }
 
 # 6. Objetos reativos para dados NCM
-ncm_exportacao_reativo <- reactive(ncm_data_loader("exportacao"))
-ncm_importacao_reativo <- reactive(ncm_data_loader("importacao"))
+ncm_exportacao_reativo <- reactive(ncm_data_loader("exportacao", input$SelecaoUF))
+ncm_importacao_reativo <- reactive(ncm_data_loader("importacao", input$SelecaoUF))
 
 
 # 3. Função para criar dados acumulados
