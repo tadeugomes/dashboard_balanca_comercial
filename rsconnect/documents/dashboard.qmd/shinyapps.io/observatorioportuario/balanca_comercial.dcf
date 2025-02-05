@@ -5,11 +5,11 @@ account: observatorioportuario
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 13906497
-bundleId: 9753572
+bundleId: 9753750
 url: https://observatorioportuario.shinyapps.io/balanca_comercial/
 version: 1
 quarto_version: 1.6.40
 quarto_engines: knitr
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: rascunho.R|teste.html|teste.qmd|teste_files
+ignoredFiles: custom-reference-doc.docx|rascunho.R|teste.html|teste.qmd|teste_files

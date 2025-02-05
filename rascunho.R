@@ -281,5 +281,29 @@ criar_acumulado <- function(ncm_exportacao, ncm_importacao) {
 acumulado_reativo <- criar_acumulado(ncm_exportacao, ncm_importacao)
 
 
+########
+schema <- schema(
+    no_pais = string(),
+    no_bloco = string(),
+    no_uf = string(),
+    no_regiao = string(),
+    no_urf = string(),
+    no_cuci_grupo = string(),
+    ano = int64(),
+    mes = int64(),
+    nome_mes = string(),
+    peso_liquido_kg = float64(),
+    valor_fob_dolar = float64()
+)
+
+ncm_exportacao_agrupado <- 
+open_dataset(
+    paste0("dados/ncm_exportacao_agrupado.parquet"), 
+    schema = schema
+) |>
+    collect()
 
 
+# Escrevendo os dados em um arquivo Feather
+write_feather(ncm_exportacao_agrupado, "dados/ncm_exportacao_agrupado.feather")
+fst::write_fst(ncm_exportacao_agrupado, "dados/ncm_exportacao_agrupado.fst")
