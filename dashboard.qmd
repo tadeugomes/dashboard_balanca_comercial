@@ -161,105 +161,6 @@ knitr::opts_chunk$set(
 #| context: server
 #| label: "dados_reativos"
 
-
-# 1. Função para carregar e processar dados de exportação
-m_exportacao_reativo <- reactive({
-  # Definir schema para garantir consistência
-  schema <- schema(
-    no_pais = string(),
-    no_bloco = string(),
-    no_uf = string(),
-    no_regiao = string(),
-    ano = int64(),
-    mes = int64(),
-    nome_mes = string(),
-    peso_liquido_kg = float64(),
-    valor_fob_dolar = float64()
-  )
-  
-  # Carregar dados
-  dados <- open_dataset(
-              "dados/m_exportacao_agrupado.parquet", 
-              schema = schema
-              ) |>
-          collect() 
-
-  
-  return(dados)
-})
-
-# 2. Função para carregar e processar dados de importação
-m_importacao_reativo <- reactive({
-  schema <- schema(
-    no_pais = string(),
-    no_bloco = string(),
-    no_uf = string(),
-    no_regiao = string(),
-    ano = int64(),
-    mes = int64(),
-    nome_mes = string(),
-    peso_liquido_kg = float64(),
-    valor_fob_dolar = float64()
-  )
-  
-  dados <-
-    open_dataset(
-      "dados/m_importacao_agrupado.parquet", 
-      schema = schema
-      ) |>
-    collect()
-
-  return(dados)
-})
-
-# 3. Função para criar dados acumulados
-criar_acumulado <- function(m_exportacao, m_importacao, variavelY) {
-  # Função auxiliar para agrupar e resumir dados
-  processar_dados <- function(dados, uf) {
-    dados |>
-      filter(no_uf == uf | no_regiao == uf | uf == "Brasil") |>
-      group_by(ano, mes, nome_mes, uf = uf) |>
-      summarise(
-        valor = if (variavelY == "Valor (em milhões de dólares)") {
-          sum(valor_fob_dolar, na.rm = TRUE)
-        } else {
-          sum(peso_liquido_kg, na.rm = TRUE)
-        },
-        .groups = "drop"
-      )
-  }
-  
-  # Processar exportações e importações
-  exportacoes <- bind_rows(
-    processar_dados(m_exportacao(), "Maranhão"),
-    processar_dados(m_exportacao(), "Nordeste"),
-    processar_dados(m_exportacao(), "Brasil")
-  ) |>
-    rename(exp_valor = valor)
-  
-  importacoes <- bind_rows(
-    processar_dados(m_importacao(), "Maranhão"),
-    processar_dados(m_importacao(), "Nordeste"),
-    processar_dados(m_importacao(), "Brasil")
-  ) |>
-    rename(imp_valor = valor)
-  
-  # Juntar dados e calcular saldo e corrente
-  acumulado <- exportacoes |>
-    left_join(importacoes, by = c("ano", "mes", "nome_mes", "uf")) |>
-    mutate(
-      saldo = exp_valor - imp_valor,
-      corrente = exp_valor + imp_valor
-    )
-  
-  return(acumulado)
-}
-
-# 4. Objeto reativo para dados acumulados
-acumulado_reativo <- reactive({
-  criar_acumulado(m_exportacao_reativo, m_importacao_reativo, input$variavelY)
-})
-
 # 5. Função para carregar dados NCM
 ncm_data_loader <- function(tipo) {
   schema <- schema(
@@ -287,11 +188,66 @@ ncm_data_loader <- function(tipo) {
 ncm_exportacao_reativo <- reactive(ncm_data_loader("exportacao"))
 ncm_importacao_reativo <- reactive(ncm_data_loader("importacao"))
 
+
+# 3. Função para criar dados acumulados
+criar_acumulado <- function(ncm_exportacao_reativo, ncm_importacao_reativo, variavelY) {
+  # Função auxiliar para agrupar e resumir dados
+  processar_dados <- function(dados, uf) {
+    dados |>
+      filter(no_uf == uf | no_regiao == uf | uf == "Brasil") |>
+      group_by(ano, mes, nome_mes, uf = uf) |>
+      summarise(
+        valor = if (variavelY == "Valor (em milhões de dólares)") {
+          sum(valor_fob_dolar, na.rm = TRUE)
+        } else {
+          sum(peso_liquido_kg, na.rm = TRUE)
+        },
+        .groups = "drop"
+      )
+  }
+  
+  # Processar exportações e importações
+  exportacoes <- bind_rows(
+    processar_dados(ncm_exportacao_reativo(), "Maranhão"),
+    processar_dados(ncm_exportacao_reativo(), "Nordeste"),
+    processar_dados(ncm_exportacao_reativo(), "Brasil")
+  ) |>
+    rename(exp_valor = valor)
+  
+  importacoes <- bind_rows(
+    processar_dados(ncm_importacao_reativo(), "Maranhão"),
+    processar_dados(ncm_importacao_reativo(), "Nordeste"),
+    processar_dados(ncm_importacao_reativo(), "Brasil")
+  ) |>
+    rename(imp_valor = valor)
+  
+  # Juntar dados e calcular saldo e corrente
+  acumulado <- exportacoes |>
+    left_join(importacoes, by = c("ano", "mes", "nome_mes", "uf")) |>
+    mutate(
+      saldo = exp_valor - imp_valor,
+      corrente = exp_valor + imp_valor
+    )
+  
+  return(acumulado)
+}
+
+# 4. Objeto reativo para dados acumulados
+acumulado_reativo <- reactive({
+  criar_acumulado(ncm_exportacao_reativo, ncm_importacao_reativo, input$variavelY)
+})
+
+
+
 # 7. Função auxiliar para extrair texto entre parênteses
 extrair_texto_entre_parenteses <- function(texto) {
   str_extract_all(texto, "(?<=\\().*?(?=\\))")[[1]]
 }
 ```
+
+
+
+
 
 
 ```{r}
@@ -308,7 +264,8 @@ funcao_ncm_exportacao_agrupado <- function(dados, coluna_agrupamento) {
         valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
         peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
         .groups = "drop"
-      )
+      ) |> 
+      arrange(mes)
   }
   
   # Filtrar dados para Maranhão, Nordeste e Brasil

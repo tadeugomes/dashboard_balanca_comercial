@@ -1,12 +1,12 @@
-name: dashboard_balanca_comercial
-title: dashboard_balanca_comercial
+name: balanca_comercial
+title: balanca_comercial
 username: observatorioportuario
 account: observatorioportuario
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 13888565
-bundleId:
-url: https://observatorioportuario.shinyapps.io/dashboard_balanca_comercial/
+appId: 13906029
+bundleId: 9749591
+url: https://observatorioportuario.shinyapps.io/balanca_comercial/
 version: 1
 quarto_version: 1.6.40
 quarto_engines: knitr
