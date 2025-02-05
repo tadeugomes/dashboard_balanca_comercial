@@ -329,15 +329,6 @@ if (!dir.exists("dados")) {
 }
 
 
-# 5. Configurações do knitr
-knitr::opts_chunk$set(
-  message = FALSE, 
-  warning = FALSE, 
-  echo = FALSE, 
-  dpi = 400
-)
-
-
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
@@ -367,15 +358,15 @@ ncm_data_loader <- function(tipo, uf) {
 
 # 6. Objetos reativos para dados NCM
 ncm_exportacao_reativo <- reactive(ncm_data_loader("exportacao", input$SelecaoUF))
+
 ncm_importacao_reativo <- reactive(ncm_data_loader("importacao", input$SelecaoUF))
 
 
-# 3. Função para criar dados acumulados
+
 criar_acumulado <- function(ncm_exportacao_reativo, ncm_importacao_reativo, variavelY) {
   # Função auxiliar para agrupar e resumir dados
   processar_dados <- function(dados, uf) {
     dados |>
-      filter(no_uf == uf | no_regiao == uf | uf == "Brasil") |>
       group_by(ano, mes, nome_mes, uf = uf) |>
       summarise(
         valor = if (variavelY == "Valor (em milhões de dólares)") {
@@ -413,11 +404,11 @@ criar_acumulado <- function(ncm_exportacao_reativo, ncm_importacao_reativo, vari
   return(acumulado)
 }
 
+
 # 4. Objeto reativo para dados acumulados
 acumulado_reativo <- reactive({
   criar_acumulado(ncm_exportacao_reativo, ncm_importacao_reativo, input$variavelY)
 })
-
 
 
 # 7. Função auxiliar para extrair texto entre parênteses
@@ -427,7 +418,7 @@ extrair_texto_entre_parenteses <- function(texto) {
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
-funcao_ncm_exportacao_agrupado <- function(dados, coluna_agrupamento) {
+funcao_ncm_agrupado  <- function(dados, coluna_agrupamento, tipo) {
   # Função interna para processar um nível geográfico
   processar_nivel <- function(dados, uf_valor, coluna_agrupamento) {
     dados |>
@@ -439,33 +430,6 @@ funcao_ncm_exportacao_agrupado <- function(dados, coluna_agrupamento) {
         .groups = "drop"
       ) |> 
       arrange(mes)
-  }
-  
-  # Filtrar dados para Maranhão, Nordeste e Brasil
-  dados_filtrado <- dados |>
-    filter(no_uf %in% c("Maranhão", "Brasil") | no_regiao == "Nordeste")
-  
-  # Processar e combinar resultados
-  bind_rows(
-    processar_nivel(dados_filtrado, "Maranhão", {{coluna_agrupamento}}),
-    processar_nivel(dados_filtrado, "Nordeste", {{coluna_agrupamento}}),
-    processar_nivel(dados_filtrado, "Brasil", {{coluna_agrupamento}})
-  )
-}
-</script>
- 
-<script type="application/shiny-prerendered" data-context="server">
-funcao_ncm_importacao_agrupado <- function(dados, coluna_agrupamento) {
-  # Função interna para processar um nível geográfico
-  processar_nivel <- function(dados, uf_valor, coluna_agrupamento) {
-    dados |>
-      filter(no_uf == uf_valor | no_regiao == uf_valor | uf_valor == "Brasil") |>
-      group_by(ano, mes, nome_mes, uf = uf_valor, {{coluna_agrupamento}}) |>
-      summarise(
-        valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
-        peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
-        .groups = "drop"
-      )
   }
   
   # Filtrar dados para Maranhão, Nordeste e Brasil
@@ -811,7 +775,8 @@ ncm_exportacao_agrupado <- dplyr::bind_rows(
          peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
         .groups = "drop"
       )
-  )
+  ) |> 
+  arrange(mes)
 
 lbls <- 
   ncm_exportacao_agrupado |> 
@@ -851,8 +816,14 @@ exp_br_produtos2024 <-
     )
 
 
+# Definindo a ordem dos meses
+ordem_meses <- c("jan.", "fev.", "mar.", "abr.", "maio", "jun.", 
+                 "jul.", "ago.", "set.", "out.", "nov.", "dez.")
+
 exp_br_produtos2024 <- 
 exp_br_produtos2024 |>
+    mutate(nome_mes = factor(nome_mes, levels = ordem_meses, ordered = TRUE)) |>
+  arrange(nome_mes) |> 
   tidyr::pivot_longer(
     cols = c(valor_fob_dolar, peso_liquido_kg), # Seleciona as colunas com os valores
     names_to = "fill", # Nome da nova coluna com os nomes das colunas originais
@@ -895,8 +866,7 @@ if ("Total" %in% exp_br_produtos2024$nome_mes) {
 
    }
 
-# cat("Eportações Produtos Depois\n")
-# print(dplyr::glimpse(exp_br_produtos2024))
+
 
 ######### TABELA ########################################
   # Criando o título e a legenda
@@ -950,11 +920,9 @@ exp_br_produtos2024 |>
 <script type="application/shiny-prerendered" data-context="server">
 output$destinos_2014_2024 <- highcharter::renderHighchart({
   
-# cat("Print print(funcao_ncm_exportacao_agrupado(ncm_exportacao_reativo(), no_pais))\n")
-# print(funcao_ncm_exportacao_agrupado(ncm_exportacao_reativo(), no_pais))       
-        
+
 lbls_decada <- 
-  funcao_ncm_exportacao_agrupado(ncm_exportacao_reativo(), no_pais) |> 
+  funcao_ncm_agrupado(ncm_exportacao_reativo(), no_pais, "exportação") |> 
   dplyr::select(!c(mes, nome_mes)) |> 
   dplyr::filter(
     uf == input$SelecaoUF &
@@ -981,7 +949,7 @@ lbls_decada <-
 # print(lbls_decada)
 
 exp_pais_2014_2024 <- 
- funcao_ncm_exportacao_agrupado(ncm_exportacao_reativo(), no_pais) |> 
+ funcao_ncm_agrupado(ncm_exportacao_reativo(), no_pais, "exportação") |> 
   select(!c(mes, nome_mes))|> 
   dplyr::filter(
     uf == input$SelecaoUF &
@@ -1029,13 +997,12 @@ exp_pais_2014_2024 <-
 
 ##### TOOLTIP
 tooltip <- list(
-        pointFormatter = highcharter::JS(
-          "function() {
-            return this.balanca + ': ' + Highcharts.numberFormat(this.y, 2, ',', '.');
-          }"
-        )
-      )
-
+  pointFormatter = highcharter::JS(
+    "function() {
+      return this.series.name + ': ' + Highcharts.numberFormat(this.y, 2, ',', '.');
+    }"
+  )
+)
 
 highcharter::hchart(
   exp_pais_2014_2024, "line", 
@@ -1066,46 +1033,44 @@ highcharter::hchart(
 output$tabela_Imp_Prod2024 <- DT::renderDT({
   
  ############# DADOS ################ 
-ncm_importacao_agrupado <- dplyr::bind_rows(
-    #Maranhão
-    ncm_importacao_reativo() |>
-      # ncm_exportacao |>
-      dplyr::filter(
-        no_uf == "Maranhão" 
-      ) |>
-      dplyr::group_by(ano, mes, nome_mes, uf = no_uf,  no_cuci_grupo) |>
-      dplyr::summarise(
-          valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
-          peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
-        .groups = "drop"
-      ),
+ncm_importacao_agrupado <- 
+ ncm_importacao_agrupado <- dplyr::bind_rows( 
+        #Maranhão
+        ncm_importacao_reativo() |>
+            dplyr::filter(
+                no_uf == "Maranhão" 
+            ) |>
+            dplyr::group_by(ano, mes, nome_mes, uf = no_uf,  no_cuci_grupo) |>
+            dplyr::summarise(
+                valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
+                peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
+                .groups = "drop"
+            ),
 
-    #Nordeste
-    ncm_importacao_reativo() |>
-      # ncm_exportacao |>
-      dplyr::filter(
-          no_regiao == "Nordeste"
-      ) |>
-      dplyr::group_by(ano, mes, nome_mes, uf = "Nordeste", no_cuci_grupo) |> # <--- uf = "Nordeste"
-      dplyr::summarise(
-         valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
-         peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
-        .groups = "drop"
-      ),
+        #Nordeste
+        ncm_importacao_reativo() |>
+            dplyr::filter(
+                no_regiao == "Nordeste"
+            ) |>
+            dplyr::group_by(ano, mes, nome_mes, uf = "Nordeste", no_cuci_grupo) |>
+            dplyr::summarise(
+                valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
+                peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
+                .groups = "drop"
+            ),
 
-    # Brasil
-    ncm_importacao_reativo() |>
-      # ncm_exportacao |>
-      dplyr::group_by(ano, mes, nome_mes,uf = "Brasil",  no_cuci_grupo) |> # <--- uf = "Brasil"
-      dplyr::summarise(
-         valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
-         peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
-        .groups = "drop"
-      )
-  )
+        # Brasil
+        ncm_importacao_reativo() |>
+            dplyr::group_by(ano, mes, nome_mes,uf = "Brasil",  no_cuci_grupo) |>
+            dplyr::summarise(
+                valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
+                peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
+                .groups = "drop"
+            )
+    )
 
 lbls <- 
-  ncm_importacao_agrupado |> 
+  funcao_ncm_agrupado(ncm_importacao_reativo(), no_cuci_grupo, "importacao") |> 
   dplyr::filter(ano == 2024 & 
                   uf == input$SelecaoUF
                   # uf == "Maranhão"
@@ -1142,8 +1107,15 @@ imp_br_produtos2024 <-
     )
 
 
+# Definindo a ordem dos meses
+ordem_meses <- c("jan.", "fev.", "mar.", "abr.", "maio", "jun.", 
+                 "jul.", "ago.", "set.", "out.", "nov.", "dez.")
+
+
 imp_br_produtos2024 <- 
 imp_br_produtos2024 |>
+    mutate(nome_mes = factor(nome_mes, levels = ordem_meses, ordered = TRUE)) |>
+  arrange(nome_mes) |> 
   tidyr::pivot_longer(
     cols = c(valor_fob_dolar, peso_liquido_kg), # Seleciona as colunas com os valores
     names_to = "fill", # Nome da nova coluna com os nomes das colunas originais
@@ -1253,11 +1225,9 @@ imp_br_produtos2024 |>
 output$origens_2014_2024 <- highcharter::renderHighchart({
   
 
-# cat("Print print(funcao_ncm_importacao_agrupado(ncm_importacao_reativo(), no_pais))\n")
-# print(funcao_ncm_importacao_agrupado(ncm_importacao_reativo(), no_pais))       
-        
+
 lbls_decada <- 
-  funcao_ncm_importacao_agrupado(ncm_importacao_reativo(), no_pais) |> 
+  funcao_ncm_agrupado(ncm_importacao_reativo(), no_pais, "importação") |> 
   dplyr::select(!c(mes, nome_mes)) |> 
   dplyr::filter(
     uf == input$SelecaoUF &
@@ -1285,7 +1255,7 @@ lbls_decada <-
 
 
 imp_pais_2014_2024 <- 
- funcao_ncm_importacao_agrupado(ncm_importacao_reativo(), no_pais) |> 
+ funcao_ncm_agrupado(ncm_importacao_reativo(), no_pais, "importação") |> 
   select(!c(mes, nome_mes))|> 
   dplyr::filter(
     uf == input$SelecaoUF &
@@ -1333,12 +1303,12 @@ imp_pais_2014_2024 <-
 
 ##### TOOLTIP
 tooltip <- list(
-        pointFormatter = highcharter::JS(
-          "function() {
-            return this.balanca + ': ' + Highcharts.numberFormat(this.y, 2, ',', '.');
-          }"
-        )
-      )
+  pointFormatter = highcharter::JS(
+    "function() {
+      return this.series.name + ': ' + Highcharts.numberFormat(this.y, 2, ',', '.');
+    }"
+  )
+)
 
 
 highcharter::hchart(
@@ -1357,7 +1327,7 @@ highcharter::hchart(
     }"))
     ) |>
   highcharter::hc_title(
-    text = paste("As Principais Origens das Importaçõs do ", 
+    text = paste("As Principais Origens das Importações do ", 
                  input$SelecaoUF, " entre 2014-2024, valores ",
                  extrair_texto_entre_parenteses(input$variavelY)),
     style = list(fontSize = "20px", fontWeight = "bold")) 
