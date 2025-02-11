@@ -24,6 +24,46 @@ library(memoise)
 library(stringr)
 ```
 
+```{r}
+  schema <- schema(
+    no_pais = string(),
+    no_bloco = string(),
+    no_uf = string(),
+    no_regiao = string(),
+    no_urf = string(),
+    no_cuci_grupo = string(),
+    ano = int64(),
+    mes = int64(),
+    nome_mes = string(),
+    peso_liquido_kg = float64(),
+    valor_fob_dolar = float64()
+  )
+  
+
+
+ncm_importacao <-  
+ open_dataset(
+    paste0("dados/ncm_importacao_agrupado.parquet")
+    , schema = schema
+    ) |>  
+    collect() 
+
+
+ncm_importacao <- 
+ncm_importacao |> 
+  dplyr::group_by(no_pais, no_uf, no_regiao,
+           no_cuci_grupo, ano, mes,
+           nome_mes) |> 
+  dplyr::summarise(
+    peso_liquido_kg = sum(peso_liquido_kg),
+    valor_fob_dolar = sum(valor_fob_dolar)
+    )
+
+
+arrow::write_parquet(ncm_importacao,  "dados/ncm_importacao_agrupado.parquet")
+
+```
+
 
 
 #  {.sidebar}

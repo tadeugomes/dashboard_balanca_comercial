@@ -311,7 +311,8 @@ bslib.Sidebar.initCollapsibleAll()
 </div>
 <p>
 <script type="application/shiny-prerendered" data-context="server-start">
-library(renv)
+# install.packages("golem")
+library(golem)
 library(leaflet)
 library(leaflet.providers)
 library(DT)
@@ -320,6 +321,9 @@ library(arrow)
 library(dplyr)
 library(memoise)
 library(stringr)
+library(golem)
+
+
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
@@ -336,10 +340,8 @@ if (!dir.exists("dados")) {
 ncm_data_loader <- function(tipo, uf) {
   schema <- schema(
     no_pais = string(),
-    no_bloco = string(),
     no_uf = string(),
     no_regiao = string(),
-    no_urf = string(),
     no_cuci_grupo = string(),
     ano = int64(),
     mes = int64(),
@@ -352,8 +354,8 @@ ncm_data_loader <- function(tipo, uf) {
     paste0("dados/ncm_", tipo, "_agrupado.parquet"), 
     schema = schema
     ) |>
-    filter(no_uf == uf | no_regiao == uf | uf == "Brasil") |> 
-    collect() 
+    filter(no_uf == uf | no_regiao == uf | uf == "Brasil") #|> 
+    # collect() 
 }
 
 # 6. Objetos reativos para dados NCM
@@ -362,11 +364,11 @@ ncm_exportacao_reativo <- reactive(ncm_data_loader("exportacao", input$SelecaoUF
 ncm_importacao_reativo <- reactive(ncm_data_loader("importacao", input$SelecaoUF))
 
 
-
 criar_acumulado <- function(ncm_exportacao_reativo, ncm_importacao_reativo, variavelY) {
   # Função auxiliar para agrupar e resumir dados
   processar_dados <- function(dados, uf) {
     dados |>
+      collect() |> 
       group_by(ano, mes, nome_mes, uf = uf) |>
       summarise(
         valor = if (variavelY == "Valor (em milhões de dólares)") {
@@ -422,6 +424,7 @@ funcao_ncm_agrupado  <- function(dados, coluna_agrupamento, tipo) {
   # Função interna para processar um nível geográfico
   processar_nivel <- function(dados, uf_valor, coluna_agrupamento) {
     dados |>
+      collect() |> 
       filter(no_uf == uf_valor | no_regiao == uf_valor | uf_valor == "Brasil") |>
       group_by(ano, mes, nome_mes, uf = uf_valor, {{coluna_agrupamento}}) |>
       summarise(
@@ -434,6 +437,7 @@ funcao_ncm_agrupado  <- function(dados, coluna_agrupamento, tipo) {
   
   # Filtrar dados para Maranhão, Nordeste e Brasil
   dados_filtrado <- dados |>
+    collect() |> 
     filter(no_uf %in% c("Maranhão", "Brasil") | no_regiao == "Nordeste")
   
   # Processar e combinar resultados
@@ -742,6 +746,7 @@ output$tabela_Exp_Prod2024 <- DT::renderDT({
 ncm_exportacao_agrupado <- dplyr::bind_rows(
     #Maranhão
     ncm_exportacao_reativo() |>
+      collect() |> 
       # ncm_exportacao |>
       dplyr::filter(
         no_uf == "Maranhão" 
@@ -755,6 +760,7 @@ ncm_exportacao_agrupado <- dplyr::bind_rows(
 
     #Nordeste
     ncm_exportacao_reativo() |>
+      collect() |> 
       # ncm_exportacao |>
       dplyr::filter(
           no_regiao == "Nordeste"
@@ -768,6 +774,7 @@ ncm_exportacao_agrupado <- dplyr::bind_rows(
 
     # Brasil
     ncm_exportacao_reativo() |>
+      collect() |> 
       # ncm_exportacao |>
       dplyr::group_by(ano, mes, nome_mes,uf = "Brasil",  no_cuci_grupo) |> # <--- uf = "Brasil"
       dplyr::summarise(
@@ -1037,6 +1044,7 @@ ncm_importacao_agrupado <-
  ncm_importacao_agrupado <- dplyr::bind_rows( 
         #Maranhão
         ncm_importacao_reativo() |>
+          collect() |> 
             dplyr::filter(
                 no_uf == "Maranhão" 
             ) |>
@@ -1049,6 +1057,7 @@ ncm_importacao_agrupado <-
 
         #Nordeste
         ncm_importacao_reativo() |>
+          collect() |> 
             dplyr::filter(
                 no_regiao == "Nordeste"
             ) |>
@@ -1061,6 +1070,7 @@ ncm_importacao_agrupado <-
 
         # Brasil
         ncm_importacao_reativo() |>
+          collect() |> 
             dplyr::group_by(ano, mes, nome_mes,uf = "Brasil",  no_cuci_grupo) |>
             dplyr::summarise(
                 valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
@@ -1370,7 +1380,7 @@ ojs_define <- function(..., .session = shiny::getDefaultReactiveDomain()) {
 <!--/html_preserve-->
 <!--html_preserve-->
 <script type="application/shiny-prerendered" data-context="execution_dependencies">
-{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74]}},"value":[{"type":"character","attributes":{},"value":["arrow","assertthat","backports","base","bit","bit64","broom","bslib","cachem","cli","compiler","crosstalk","curl","data.table","datasets","digest","dplyr","DT","evaluate","fastmap","generics","glue","graphics","grDevices","grid","highcharter","htmltools","htmlwidgets","httpuv","igraph","jquerylib","jsonlite","knitr","later","lattice","leaflet","leaflet.providers","lifecycle","lubridate","magrittr","memoise","methods","mime","pillar","pkgconfig","promises","purrr","quantmod","R6","Rcpp","renv","rlang","rlist","rmarkdown","rstudioapi","sass","shiny","stats","stringi","stringr","tibble","tidyr","tidyselect","timechange","tools","TTR","tzdb","utils","vctrs","xfun","xtable","xts","yaml","zoo"]},{"type":"character","attributes":{},"value":["18.1.0.1","0.2.1","1.5.0","4.4.2","4.5.0.1","4.6.0-1","1.0.7","0.9.0","1.1.0","3.6.3","4.4.2","1.2.1","6.2.0","1.16.4","4.4.2","0.6.37","1.1.4","0.33","1.0.3","1.2.0","0.1.3","1.8.0","4.4.2","4.4.2","4.4.2","0.9.4","0.5.8.1","1.6.4","1.6.15","2.1.4","0.1.4","1.8.9","1.49","1.4.1","0.22-6","2.2.2","2.0.0","1.0.4","1.9.4","2.0.3","2.0.1","4.4.2","0.12","1.10.1","2.0.3","1.3.2","1.0.2","0.4.26","2.5.1","1.0.14","1.1.0","1.1.5","0.4.6.2","2.29","0.17.1","0.4.9","1.10.0","4.4.2","1.8.4","1.5.1","3.2.1","1.3.1","1.2.1","0.3.0","4.4.2","0.24.4","0.4.0","4.4.2","0.6.5","0.50","1.8-4","0.14.1","2.3.10","1.8-12"]}]}]}
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77]}},"value":[{"type":"character","attributes":{},"value":["arrow","assertthat","attempt","backports","base","bit","bit64","broom","bslib","cachem","cli","compiler","config","crosstalk","curl","data.table","datasets","digest","dplyr","DT","evaluate","fastmap","generics","glue","golem","graphics","grDevices","grid","highcharter","htmltools","htmlwidgets","httpuv","igraph","jquerylib","jsonlite","knitr","later","lattice","leaflet","leaflet.providers","lifecycle","lubridate","magrittr","memoise","methods","mime","pillar","pkgconfig","promises","purrr","quantmod","R6","Rcpp","renv","rlang","rlist","rmarkdown","rstudioapi","sass","shiny","stats","stringi","stringr","tibble","tidyr","tidyselect","timechange","tools","TTR","tzdb","utils","vctrs","xfun","xtable","xts","yaml","zoo"]},{"type":"character","attributes":{},"value":["18.1.0.1","0.2.1","0.3.1","1.5.0","4.4.2","4.5.0.1","4.6.0-1","1.0.7","0.9.0","1.1.0","3.6.3","4.4.2","0.3.2","1.2.1","6.2.0","1.16.4","4.4.2","0.6.37","1.1.4","0.33","1.0.3","1.2.0","0.1.3","1.8.0","0.5.1","4.4.2","4.4.2","4.4.2","0.9.4","0.5.8.1","1.6.4","1.6.15","2.1.4","0.1.4","1.8.9","1.49","1.4.1","0.22-6","2.2.2","2.0.0","1.0.4","1.9.4","2.0.3","2.0.1","4.4.2","0.12","1.10.1","2.0.3","1.3.2","1.0.2","0.4.26","2.5.1","1.0.14","1.1.0","1.1.5","0.4.6.2","2.29","0.17.1","0.4.9","1.10.0","4.4.2","1.8.4","1.5.1","3.2.1","1.3.1","1.2.1","0.3.0","4.4.2","0.24.4","0.4.0","4.4.2","0.6.5","0.50","1.8-4","0.14.1","2.3.10","1.8-12"]}]}]}
 </script>
 <!--/html_preserve-->
 

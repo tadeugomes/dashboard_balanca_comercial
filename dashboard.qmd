@@ -13,7 +13,8 @@ editor: source
 ```{r}
 #| context: setup
 
-library(renv)
+# install.packages("golem")
+library(golem)
 library(leaflet)
 library(leaflet.providers)
 library(DT)
@@ -22,6 +23,9 @@ library(arrow)
 library(dplyr)
 library(memoise)
 library(stringr)
+library(golem)
+
+
 ```
 
 
@@ -156,10 +160,8 @@ if (!dir.exists("dados")) {
 ncm_data_loader <- function(tipo, uf) {
   schema <- schema(
     no_pais = string(),
-    no_bloco = string(),
     no_uf = string(),
     no_regiao = string(),
-    no_urf = string(),
     no_cuci_grupo = string(),
     ano = int64(),
     mes = int64(),
@@ -172,8 +174,8 @@ ncm_data_loader <- function(tipo, uf) {
     paste0("dados/ncm_", tipo, "_agrupado.parquet"), 
     schema = schema
     ) |>
-    filter(no_uf == uf | no_regiao == uf | uf == "Brasil") |> 
-    collect() 
+    filter(no_uf == uf | no_regiao == uf | uf == "Brasil") #|> 
+    # collect() 
 }
 
 # 6. Objetos reativos para dados NCM
@@ -182,11 +184,11 @@ ncm_exportacao_reativo <- reactive(ncm_data_loader("exportacao", input$SelecaoUF
 ncm_importacao_reativo <- reactive(ncm_data_loader("importacao", input$SelecaoUF))
 
 
-
 criar_acumulado <- function(ncm_exportacao_reativo, ncm_importacao_reativo, variavelY) {
   # Função auxiliar para agrupar e resumir dados
   processar_dados <- function(dados, uf) {
     dados |>
+      collect() |> 
       group_by(ano, mes, nome_mes, uf = uf) |>
       summarise(
         valor = if (variavelY == "Valor (em milhões de dólares)") {
@@ -248,6 +250,7 @@ funcao_ncm_agrupado  <- function(dados, coluna_agrupamento, tipo) {
   # Função interna para processar um nível geográfico
   processar_nivel <- function(dados, uf_valor, coluna_agrupamento) {
     dados |>
+      collect() |> 
       filter(no_uf == uf_valor | no_regiao == uf_valor | uf_valor == "Brasil") |>
       group_by(ano, mes, nome_mes, uf = uf_valor, {{coluna_agrupamento}}) |>
       summarise(
@@ -260,6 +263,7 @@ funcao_ncm_agrupado  <- function(dados, coluna_agrupamento, tipo) {
   
   # Filtrar dados para Maranhão, Nordeste e Brasil
   dados_filtrado <- dados |>
+    collect() |> 
     filter(no_uf %in% c("Maranhão", "Brasil") | no_regiao == "Nordeste")
   
   # Processar e combinar resultados
@@ -584,6 +588,7 @@ output$tabela_Exp_Prod2024 <- DT::renderDT({
 ncm_exportacao_agrupado <- dplyr::bind_rows(
     #Maranhão
     ncm_exportacao_reativo() |>
+      collect() |> 
       # ncm_exportacao |>
       dplyr::filter(
         no_uf == "Maranhão" 
@@ -597,6 +602,7 @@ ncm_exportacao_agrupado <- dplyr::bind_rows(
 
     #Nordeste
     ncm_exportacao_reativo() |>
+      collect() |> 
       # ncm_exportacao |>
       dplyr::filter(
           no_regiao == "Nordeste"
@@ -610,6 +616,7 @@ ncm_exportacao_agrupado <- dplyr::bind_rows(
 
     # Brasil
     ncm_exportacao_reativo() |>
+      collect() |> 
       # ncm_exportacao |>
       dplyr::group_by(ano, mes, nome_mes,uf = "Brasil",  no_cuci_grupo) |> # <--- uf = "Brasil"
       dplyr::summarise(
@@ -887,6 +894,7 @@ ncm_importacao_agrupado <-
  ncm_importacao_agrupado <- dplyr::bind_rows( 
         #Maranhão
         ncm_importacao_reativo() |>
+          collect() |> 
             dplyr::filter(
                 no_uf == "Maranhão" 
             ) |>
@@ -899,6 +907,7 @@ ncm_importacao_agrupado <-
 
         #Nordeste
         ncm_importacao_reativo() |>
+          collect() |> 
             dplyr::filter(
                 no_regiao == "Nordeste"
             ) |>
@@ -911,6 +920,7 @@ ncm_importacao_agrupado <-
 
         # Brasil
         ncm_importacao_reativo() |>
+          collect() |> 
             dplyr::group_by(ano, mes, nome_mes,uf = "Brasil",  no_cuci_grupo) |>
             dplyr::summarise(
                 valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),

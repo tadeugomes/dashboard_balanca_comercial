@@ -303,7 +303,9 @@ open_dataset(
 ) |>
     collect()
 
+ncm_exportacao_agrupado |>
+    filter(no_uf == "Maranhão") |> 
+    group_by(no_urf) |> 
+    summarise(valor_fob_dolar = sum(valor_fob_dolar)) |> 
+    arrange(desc(valor_fob_dolar))
 
-# Escrevendo os dados em um arquivo Feather
-write_feather(ncm_exportacao_agrupado, "dados/ncm_exportacao_agrupado.feather")
-fst::write_fst(ncm_exportacao_agrupado, "dados/ncm_exportacao_agrupado.fst")
