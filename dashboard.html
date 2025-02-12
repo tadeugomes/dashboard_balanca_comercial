@@ -337,7 +337,8 @@ if (!dir.exists("dados")) {
  
 <script type="application/shiny-prerendered" data-context="server">
 # 5. Função para carregar dados NCM
-ncm_data_loader <- function(tipo, uf) {
+# Função para carregar dados NCM com cache
+ncm_data_loader <- memoise(function(tipo, uf) {
   schema <- schema(
     no_pais = string(),
     no_uf = string(),
@@ -353,11 +354,10 @@ ncm_data_loader <- function(tipo, uf) {
   open_dataset(
     paste0("dados/ncm_", tipo, "_agrupado.parquet"), 
     schema = schema
-    ) |>
-    filter(no_uf == uf | no_regiao == uf | uf == "Brasil") #|> 
-    # collect() 
-}
-
+  ) |>
+    filter(no_uf == uf | no_regiao == uf | uf == "Brasil") |>
+    collect()
+})
 # 6. Objetos reativos para dados NCM
 ncm_exportacao_reativo <- reactive(ncm_data_loader("exportacao", input$SelecaoUF))
 
