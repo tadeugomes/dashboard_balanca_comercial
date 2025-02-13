@@ -24,8 +24,10 @@ library(dplyr)
 library(memoise)
 library(stringr)
 library(golem)
+library(future)
+library(furrr)
 
-
+plan(multicore)
 ```
 
 
@@ -200,21 +202,25 @@ criar_acumulado <- function(ncm_exportacao_reativo, ncm_importacao_reativo, vari
       )
   }
   
+  # Obtenha os valores dos objetos reativos *fora* do future_map
+  exportacoes_dados <- ncm_exportacao_reativo()
+  importacoes_dados <- ncm_importacao_reativo()
+  
+  
   # Processar exportações e importações
   exportacoes <- bind_rows(
-    processar_dados(ncm_exportacao_reativo(), "Maranhão"),
-    processar_dados(ncm_exportacao_reativo(), "Nordeste"),
-    processar_dados(ncm_exportacao_reativo(), "Brasil")
+    future_map(c("Maranhão", "Nordeste", "Brasil"), ~ processar_dados(exportacoes_dados, .x))
   ) |>
     rename(exp_valor = valor)
   
+  
   importacoes <- bind_rows(
-    processar_dados(ncm_importacao_reativo(), "Maranhão"),
-    processar_dados(ncm_importacao_reativo(), "Nordeste"),
-    processar_dados(ncm_importacao_reativo(), "Brasil")
+    future_map(c("Maranhão", "Nordeste", "Brasil"), ~ processar_dados(importacoes_dados, .x))
   ) |>
     rename(imp_valor = valor)
   
+  # Juntar dados e calcular saldo e corrente
+ 
   # Juntar dados e calcular saldo e corrente
   acumulado <- exportacoes |>
     left_join(importacoes, by = c("ano", "mes", "nome_mes", "uf")) |>
@@ -227,13 +233,14 @@ criar_acumulado <- function(ncm_exportacao_reativo, ncm_importacao_reativo, vari
 }
 
 
-# 4. Objeto reativo para dados acumulados
+# 4. Objeto reativo para dados acumulados (sem alterações, pois já usa memoise na função auxiliar)
 acumulado_reativo <- reactive({
   criar_acumulado(ncm_exportacao_reativo, ncm_importacao_reativo, input$variavelY)
 })
 
 
-# 7. Função auxiliar para extrair texto entre parênteses
+
+# 7. Função auxiliar para extrair texto entre parênteses (sem alterações)
 extrair_texto_entre_parenteses <- function(texto) {
   str_extract_all(texto, "(?<=\\().*?(?=\\))")[[1]]
 }

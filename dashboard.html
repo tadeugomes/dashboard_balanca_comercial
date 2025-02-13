@@ -322,8 +322,10 @@ library(dplyr)
 library(memoise)
 library(stringr)
 library(golem)
+library(future)
+library(furrr)
 
-
+plan(multicore)
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
@@ -380,21 +382,25 @@ criar_acumulado <- function(ncm_exportacao_reativo, ncm_importacao_reativo, vari
       )
   }
   
+  # Obtenha os valores dos objetos reativos *fora* do future_map
+  exportacoes_dados <- ncm_exportacao_reativo()
+  importacoes_dados <- ncm_importacao_reativo()
+  
+  
   # Processar exportações e importações
   exportacoes <- bind_rows(
-    processar_dados(ncm_exportacao_reativo(), "Maranhão"),
-    processar_dados(ncm_exportacao_reativo(), "Nordeste"),
-    processar_dados(ncm_exportacao_reativo(), "Brasil")
+    future_map(c("Maranhão", "Nordeste", "Brasil"), ~ processar_dados(exportacoes_dados, .x))
   ) |>
     rename(exp_valor = valor)
   
+  
   importacoes <- bind_rows(
-    processar_dados(ncm_importacao_reativo(), "Maranhão"),
-    processar_dados(ncm_importacao_reativo(), "Nordeste"),
-    processar_dados(ncm_importacao_reativo(), "Brasil")
+    future_map(c("Maranhão", "Nordeste", "Brasil"), ~ processar_dados(importacoes_dados, .x))
   ) |>
     rename(imp_valor = valor)
   
+  # Juntar dados e calcular saldo e corrente
+ 
   # Juntar dados e calcular saldo e corrente
   acumulado <- exportacoes |>
     left_join(importacoes, by = c("ano", "mes", "nome_mes", "uf")) |>
@@ -407,13 +413,14 @@ criar_acumulado <- function(ncm_exportacao_reativo, ncm_importacao_reativo, vari
 }
 
 
-# 4. Objeto reativo para dados acumulados
+# 4. Objeto reativo para dados acumulados (sem alterações, pois já usa memoise na função auxiliar)
 acumulado_reativo <- reactive({
   criar_acumulado(ncm_exportacao_reativo, ncm_importacao_reativo, input$variavelY)
 })
 
 
-# 7. Função auxiliar para extrair texto entre parênteses
+
+# 7. Função auxiliar para extrair texto entre parênteses (sem alterações)
 extrair_texto_entre_parenteses <- function(texto) {
   str_extract_all(texto, "(?<=\\().*?(?=\\))")[[1]]
 }
@@ -1380,7 +1387,7 @@ ojs_define <- function(..., .session = shiny::getDefaultReactiveDomain()) {
 <!--/html_preserve-->
 <!--html_preserve-->
 <script type="application/shiny-prerendered" data-context="execution_dependencies">
-{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77]}},"value":[{"type":"character","attributes":{},"value":["arrow","assertthat","attempt","backports","base","bit","bit64","broom","bslib","cachem","cli","compiler","config","crosstalk","curl","data.table","datasets","digest","dplyr","DT","evaluate","fastmap","generics","glue","golem","graphics","grDevices","grid","highcharter","htmltools","htmlwidgets","httpuv","igraph","jquerylib","jsonlite","knitr","later","lattice","leaflet","leaflet.providers","lifecycle","lubridate","magrittr","memoise","methods","mime","pillar","pkgconfig","promises","purrr","quantmod","R6","Rcpp","renv","rlang","rlist","rmarkdown","rstudioapi","sass","shiny","stats","stringi","stringr","tibble","tidyr","tidyselect","timechange","tools","TTR","tzdb","utils","vctrs","xfun","xtable","xts","yaml","zoo"]},{"type":"character","attributes":{},"value":["18.1.0.1","0.2.1","0.3.1","1.5.0","4.4.2","4.5.0.1","4.6.0-1","1.0.7","0.9.0","1.1.0","3.6.3","4.4.2","0.3.2","1.2.1","6.2.0","1.16.4","4.4.2","0.6.37","1.1.4","0.33","1.0.3","1.2.0","0.1.3","1.8.0","0.5.1","4.4.2","4.4.2","4.4.2","0.9.4","0.5.8.1","1.6.4","1.6.15","2.1.4","0.1.4","1.8.9","1.49","1.4.1","0.22-6","2.2.2","2.0.0","1.0.4","1.9.4","2.0.3","2.0.1","4.4.2","0.12","1.10.1","2.0.3","1.3.2","1.0.2","0.4.26","2.5.1","1.0.14","1.1.0","1.1.5","0.4.6.2","2.29","0.17.1","0.4.9","1.10.0","4.4.2","1.8.4","1.5.1","3.2.1","1.3.1","1.2.1","0.3.0","4.4.2","0.24.4","0.4.0","4.4.2","0.6.5","0.50","1.8-4","0.14.1","2.3.10","1.8-12"]}]}]}
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84]}},"value":[{"type":"character","attributes":{},"value":["arrow","assertthat","attempt","backports","base","bit","bit64","broom","bslib","cachem","cli","codetools","compiler","config","crosstalk","curl","data.table","datasets","digest","dplyr","DT","evaluate","fastmap","furrr","future","generics","globals","glue","golem","graphics","grDevices","grid","highcharter","htmltools","htmlwidgets","httpuv","igraph","jquerylib","jsonlite","knitr","later","lattice","leaflet","leaflet.providers","lifecycle","listenv","lubridate","magrittr","memoise","methods","mime","parallel","parallelly","pillar","pkgconfig","promises","purrr","quantmod","R6","Rcpp","renv","rlang","rlist","rmarkdown","rstudioapi","sass","shiny","stats","stringi","stringr","tibble","tidyr","tidyselect","timechange","tools","TTR","tzdb","utils","vctrs","xfun","xtable","xts","yaml","zoo"]},{"type":"character","attributes":{},"value":["18.1.0.1","0.2.1","0.3.1","1.5.0","4.4.2","4.5.0.1","4.6.0-1","1.0.7","0.9.0","1.1.0","3.6.3","0.2-20","4.4.2","0.3.2","1.2.1","6.2.0","1.16.4","4.4.2","0.6.37","1.1.4","0.33","1.0.3","1.2.0","0.3.1","1.34.0","0.1.3","0.16.3","1.8.0","0.5.1","4.4.2","4.4.2","4.4.2","0.9.4","0.5.8.1","1.6.4","1.6.15","2.1.4","0.1.4","1.8.9","1.49","1.4.1","0.22-6","2.2.2","2.0.0","1.0.4","0.9.1","1.9.4","2.0.3","2.0.1","4.4.2","0.12","4.4.2","1.42.0","1.10.1","2.0.3","1.3.2","1.0.2","0.4.26","2.5.1","1.0.14","1.1.0","1.1.5","0.4.6.2","2.29","0.17.1","0.4.9","1.10.0","4.4.2","1.8.4","1.5.1","3.2.1","1.3.1","1.2.1","0.3.0","4.4.2","0.24.4","0.4.0","4.4.2","0.6.5","0.50","1.8-4","0.14.1","2.3.10","1.8-12"]}]}]}
 </script>
 <!--/html_preserve-->
 
