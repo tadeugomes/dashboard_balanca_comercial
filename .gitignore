@@ -11,3 +11,6 @@
 
 # Dados gerados pelo ETL — publicados como asset de Release, nunca versionados
 dados/*.parquet
+
+# Arquivos temporários do ETL (CSVs brutos e cache anual)
+etl/.trabalho/
