@@ -256,6 +256,65 @@ Validado contra mutações:
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 ```
 
+## Correção Revisão 2: Teste de `union_by_name` Reescrito
+
+O teste anterior "consolidar_fluxo preserva colunas com schemas divergentes" não comprovava o `union_by_name` porque ambos os parquets tinham as mesmas 9 colunas, apenas em ordem diferente — cenário que o DuckDB já resolve por nome.
+
+**Problema real identificado**: sem `union_by_name = true`, o `read_parquet([...])` alinha pelo schema do PRIMEIRO arquivo e descarta silenciosamente colunas extras dos demais.
+
+### Novo Teste: `consolidar_fluxo alinha e preserva colunas extras via union_by_name`
+
+**Construção**:
+- **Parquet A (2024)**: 9 colunas padrão (sem `co_ncm`)
+- **Parquet B (2025)**: 9 colunas padrão + coluna extra `co_ncm` (simulando versão diferente do ETL)
+
+**Asserções**:
+- Saída contém 10 colunas (as 9 + `co_ncm`)
+- Linha de A: `co_ncm = NULL` (esperado)
+- Linha de B: `co_ncm = "1001.90.00"` (valor preservado)
+
+### Critério de Aceite: Comprovação de `union_by_name`
+
+**SEM `union_by_name = true`** (removido temporariamente da implementação):
+```
+FAILURE: 'test-consolidar.R:96:3' -----------------
+Expected `sort(names(saida))` to equal `sort(expected_cols)`.
+Differences:
+Lengths differ: 9 is not 10
+
+FAILURE: 'test-consolidar.R:98:3' -----------------
+Expected `is.na(saida$co_ncm[1])` to be TRUE.
+
+FAILURE: 'test-consolidar.R:100:3' ----------------
+Expected `saida$co_ncm[2]` to equal "1001.90.00".
+
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 8 ]
+```
+
+**COM `union_by_name = true`** (restaurado):
+```
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 11 ]
+```
+
+✓ **Conclusão**: Teste prova que `union_by_name = true` é necessário — sem ele, a coluna extra é descartada silenciosamente.
+
+### Commit de Correção Revisão 2
+
+```
+Hash: 3b55916
+Mensagem: fix(test): reescrever teste de schemas divergentes para validar union_by_name
+
+- Parquet A: 9 colunas padrão (2024)
+- Parquet B: 9 colunas + coluna extra co_ncm (2025)
+- Teste valida que coluna extra sobrevive e NULL é correto para ano A
+- Sem union_by_name: 3 falhas (coluna descartada silenciosamente)
+- Com union_by_name: 11 passando
+
+Teste renomeado para descrever o que realmente valida.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+```
+
 ## Resumo Final
 
 | Aspecto | Status |
@@ -265,11 +324,12 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 | Testes depois (passa) | ✓ Confirmado PASS (45 total) |
 | Mutação 1 (ignorar parquets) | ✓ Quebrou 3 testes |
 | Mutação 2 (remover validação) | ✓ Quebrou 1 teste |
-| CRITICAL (schema/tipos) | ✓ Corrigido — mutações (a) e (b) quebram agora |
-| IMPORTANT 1 (union_by_name) | ✓ Corrigido — proteção contra perda silenciosa |
-| IMPORTANT 2 (contagem) | ✓ Corrigido — 3 testes, 10 expectativas |
-| Suíte completa pós-correção | ✓ 50 testes passando |
+| CRITICAL (schema/tipos) | ✓ Corrigido — mutações (a) e (b) quebram |
+| IMPORTANT 1 (union_by_name) | ✓ Corrigido — teste reescrito com schema divergente real |
+| IMPORTANT 2 (contagem) | ✓ Corrigido — 3 testes, 11 expectativas pós-correção |
+| Comprovação union_by_name | ✓ SEM = FAIL 3, COM = PASS 11 |
+| Suíte completa pós-revisão-2 | ✓ 51 testes passando |
 | Integridade Git | ✓ Status limpo, arquivos versionados |
 | Desvios | Nenhum |
 
-**Status Final: DONE** — Implementação e correções completas, todas as validações passando, mutações críticas detectadas.
+**Status Final: DONE** — Implementação completa, todas as correções de revisão aplicadas, cada proteção comprovada por teste que falha sem ela.
