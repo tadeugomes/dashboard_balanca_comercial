@@ -15,6 +15,25 @@
 # sendo baixado como se fosse dado válido. Por isso todo baixar_arquivo()
 # abaixo recebe um `validador`, que confere o cabeçalho da primeira linha do
 # CSV antes de aceitar o download.
+#
+# NOTA SOBRE RESUMABILIDADE (rodada de correção 1): a primeira execução real
+# dos 13 anos mostrou que o servidor do MDIC derruba conexões nos arquivos de
+# importação, que chegam a ser o dobro dos de exportação (IMP_2014 tem 133 MB
+# contra 68 MB de EXP_2014). Duas mudanças tratam isso:
+#   (a) `estado$arquivos[[chave]]` é gravado em disco logo depois de cada ano
+#       ser transformado com sucesso, não só no fim do script. Assim, se a
+#       execução abortar mais adiante (rede ruim num arquivo grande, por
+#       exemplo), os anos já processados NÃO são rebaixados na próxima
+#       tentativa — só o que falhou. `totais_por_ano` (a referência de
+#       regressão) continua só sendo gravado quando a validação do parquet
+#       consolidado passa: são garantias distintas, e só a segunda depende do
+#       resultado da validação.
+#   (b) os downloads de arquivo ANUAL (não das tabelas auxiliares, que são
+#       pequenas) usam mais tentativas e mais espera entre elas do que o
+#       default de `baixar_arquivo()` — ver TENTATIVAS_ANUAIS/ESPERA_ANUAIS
+#       abaixo. Os defaults do módulo baixar.R não mudam: os testes de
+#       backoff dependem deles, e o módulo não precisa saber que existem
+#       arquivos grandes.
 
 suppressPackageStartupMessages({
   library(DBI)
@@ -55,6 +74,15 @@ COLUNAS_AUXILIARES <- list(
   NCM      = c("CO_NCM", "CO_CUCI_ITEM"),
   NCM_CUCI = c("CO_CUCI_ITEM", "NO_CUCI_GRUPO")
 )
+
+# Arquivos anuais de importação chegam a 175 MB e o servidor do MDIC derruba
+# conexões neles com alguma frequência. 5 tentativas com espera_base = 15
+# dão esperas de 15s, 30s, 45s e 60s entre tentativas (~2,5 min de paciência
+# por arquivo), contra os 3 tentativas / 5s-10s do default de baixar_arquivo,
+# calibrado para as tabelas auxiliares (poucos MB). As auxiliares continuam
+# usando o default do módulo.
+TENTATIVAS_ANUAIS <- 5L
+ESPERA_ANUAIS      <- 15
 
 forcar <- "--forcar" %in% commandArgs(trailingOnly = TRUE)
 
@@ -119,7 +147,9 @@ for (i in seq_len(nrow(pendentes))) {
   # sentido varrer os 26 arquivos sabendo que a rede está com problema, então
   # interrompemos a execução para que o operador investigue.
   tryCatch({
-    baixar_arquivo(item$url, csv, validador = validador_csv(COLUNAS_ANUAIS))
+    baixar_arquivo(item$url, csv, tentativas = TENTATIVAS_ANUAIS,
+                   espera_base = ESPERA_ANUAIS,
+                   validador = validador_csv(COLUNAS_ANUAIS))
 
     parquet_ano <- file.path(DIR_CACHE,
                              paste0(item$fluxo, "_", item$ano, ".parquet"))
@@ -128,7 +158,13 @@ for (i in seq_len(nrow(pendentes))) {
     # O CSV bruto chega a 175 MB; o runner do Actions tem disco limitado.
     unlink(csv)
 
+    # Grava AGORA, não só no fim: se a execução abortar mais adiante (outro
+    # ano com falha de rede, por exemplo), este ano já não precisa ser
+    # rebaixado na próxima tentativa. totais_por_ano (a referência de
+    # regressão) é coisa distinta e só é gravado depois que a validação do
+    # parquet consolidado passa, lá na etapa 4 -- não aqui.
     estado$arquivos[[item$chave]] <- remotos[[item$chave]]
+    gravar_estado(estado, CAMINHO_ESTADO)
   }, error = function(e) {
     msg <- conditionMessage(e)
     unlink(csv)
@@ -139,7 +175,9 @@ for (i in seq_len(nrow(pendentes))) {
       anos_pulados <<- c(anos_pulados, item$chave)
     } else {
       registrar("ERRO ao processar", item$chave, ":", msg)
-      registrar("Falha de rede (ou erro inesperado) -- interrompendo a execução.")
+      registrar("Falha de rede (ou erro inesperado) -- interrompendo a execução.",
+                "Os anos já processados nesta execução ficam registrados em",
+                CAMINHO_ESTADO, "e a próxima tentativa retoma daqui.")
       quit(status = 1)
     }
   })
@@ -185,7 +223,9 @@ for (fluxo in c("exportacao", "importacao")) {
 }
 
 if (!resultado_ok) {
-  registrar("Pipeline interrompido: o estado NÃO foi atualizado.")
+  registrar("Pipeline interrompido: totais de referência NÃO foram",
+            "atualizados (os anos processados nesta execução já estão",
+            "registrados em", CAMINHO_ESTADO, "e não serão rebaixados).")
   quit(status = 1)
 }
 
