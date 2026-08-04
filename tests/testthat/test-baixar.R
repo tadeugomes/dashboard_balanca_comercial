@@ -29,7 +29,7 @@ test_that("converter_para_utf8 é idempotente em arquivo já ASCII", {
 test_that("baixar_arquivo desiste após esgotar as tentativas", {
   destino <- tempfile(fileext = ".csv")
   expect_error(
-    baixar_arquivo("https://balanca.economia.gov.br/inexistente-xyz.csv",
+    baixar_arquivo("https://inexistent-domain-xyz-12345.com/arquivo.csv",
                    destino, tentativas = 2L),
     "Falha ao baixar"
   )
