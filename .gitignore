@@ -8,3 +8,6 @@
 .httr-oauth
 .DS_Store
 .quarto
+
+# Dados gerados pelo ETL — publicados como asset de Release, nunca versionados
+dados/*.parquet
