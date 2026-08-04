@@ -254,3 +254,63 @@ test_that("valor_fob_dolar e peso_liquido_kg preservam a escala legada (milhões
   # KG_LIQUIDO = 2.000.000.000  ->  peso_liquido_kg = 2   (divisor 1e9)
   expect_equal(saida$peso_liquido_kg[1], 2, tolerance = 1e-9)
 })
+
+# Teste de regressão (rodada de correção 3, fora do brief original): o
+# NCM.csv real do MDIC tem aspas não escapadas em NO_NCM_POR para medidas em
+# polegadas (ex.: CO_NCM 40118010, pneus, "...940 mm (37"), para aros...").
+# Sob strict_mode padrão do DuckDB, isso aborta a leitura inteira com
+# "Value with unterminated quote found". As colunas usadas pelo ETL
+# (CO_NCM, CO_CUCI_ITEM) vêm antes do campo malformado e permanecem
+# íntegras com strict_mode = false. Esta fixture reproduz o padrão real.
+montar_fixture_ncm_malformado <- function() {
+  dir <- tempfile("fixture_ncm_malformado")
+  dir.create(file.path(dir, "aux"), recursive = TRUE)
+
+  writeLines(c(
+    '"CO_ANO";"CO_MES";"CO_NCM";"CO_UNID";"CO_PAIS";"SG_UF_NCM";"CO_VIA";"CO_URF";"QT_ESTAT";"KG_LIQUIDO";"VL_FOB"',
+    '"2025";"01";"40118010";"10";"063";"MA";"01";"0817800";1;10;100'
+  ), file.path(dir, "EXP_2025.csv"))
+
+  writeLines(c(
+    '"CO_PAIS";"CO_PAIS_ISON3";"CO_PAIS_ISOA3";"NO_PAIS";"NO_PAIS_ING";"NO_PAIS_ESP"',
+    '"063";"076";"BRA";"Índia";"India";"India"'
+  ), file.path(dir, "aux", "PAIS.csv"))
+
+  writeLines(c(
+    '"CO_UF";"SG_UF";"NO_UF";"NO_REGIAO"',
+    '"21";"MA";"Maranhão";"REGIAO NORDESTE"'
+  ), file.path(dir, "aux", "UF.csv"))
+
+  # Linha real do NCM.csv do MDIC (pneus, CO_NCM 40118010): NO_NCM_POR tem
+  # uma aspa não escapada logo após "37"; NO_NCM_ESP/NO_NCM_ING escapam a
+  # aspa corretamente (""), como no arquivo de produção.
+  writeLines(c(
+    '"CO_NCM";"CO_UNID";"CO_SH6";"CO_PPE";"CO_PPI";"CO_FAT_AGREG";"CO_CUCI_ITEM";"CO_CGCE_N3";"CO_SIIT";"CO_ISIC_CLASSE";"CO_EXP_SUBSET";"NO_NCM_POR";"NO_NCM_ESP";"NO_NCM_ING"',
+    '"40118010";"10";"401180";"0";"0";"1";"62551";"210";"1";"0111";"0";"Pneu novo de borracha, diâmetro do aro de 940 mm (37"), para aros de 15 polegadas";"Neumático nuevo, diámetro de 940 mm (37"")";"New tyre, rim diameter 940 mm (37"")"'
+  ), file.path(dir, "aux", "NCM.csv"))
+
+  writeLines(c(
+    '"CO_CUCI_ITEM";"NO_CUCI_ITEM";"CO_CUCI_SUB";"NO_CUCI_SUB";"CO_CUCI_GRUPO";"NO_CUCI_GRUPO";"CO_CUCI_DIVISAO";"NO_CUCI_DIVISAO";"CO_CUCI_SEC";"NO_CUCI_SEC"',
+    '"62551";"Pneus";"625";"Pneus";"625";"Manufaturas de borracha";"62";"Borracha";"6";"Artigos manufaturados"'
+  ), file.path(dir, "aux", "NCM_CUCI.csv"))
+
+  dir
+}
+
+test_that("NCM.csv com aspa não escapada em NO_NCM_POR não aborta a transformação", {
+  dir <- montar_fixture_ncm_malformado()
+  destino <- file.path(dir, "saida.parquet")
+
+  # A chamada não deve lançar erro (regressão: strict_mode padrão do DuckDB
+  # abortava aqui com "Value with unterminated quote found").
+  expect_no_error(
+    transformar_ano(file.path(dir, "EXP_2025.csv"), file.path(dir, "aux"),
+                    destino, caminho_sql = SQL_TESTE)
+  )
+
+  saida <- ler_saida(destino)
+  expect_equal(nrow(saida), 1L)
+  # Prova que CO_NCM/CO_CUCI_ITEM foram lidos corretamente apesar do campo
+  # de descrição malformado: o grupo CUCI correto chega até a saída.
+  expect_equal(saida$no_cuci_grupo[1], "Manufaturas de borracha")
+})

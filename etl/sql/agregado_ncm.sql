@@ -16,12 +16,22 @@ COPY (
       delim = ';', header = true, quote = '"', all_varchar = true
     )
   ),
+  -- strict_mode = false nas quatro tabelas auxiliares: o NCM.csv real do
+  -- MDIC tem aspas não escapadas em NO_NCM_POR (ex.: medidas em polegadas,
+  -- `37"`), que quebram o parser estrito do DuckDB. As colunas usadas pelo
+  -- ETL (CO_NCM, CO_CUCI_ITEM, ...) vêm antes dos campos de texto livre
+  -- malformados e saem íntegras; ignore_errors NÃO é usado aqui porque
+  -- descartaria linhas em silêncio. O arquivo de dados anual não recebe
+  -- essa flag: é ASCII com códigos numéricos, e um erro de parse ali deve
+  -- interromper a execução, não ser tolerado.
   ncm_grupo AS (
     SELECT n.CO_NCM, c.NO_CUCI_GRUPO
     FROM read_csv('{{dir_aux}}/NCM.csv',
-                  delim = ';', header = true, quote = '"', all_varchar = true) n
+                  delim = ';', header = true, quote = '"', all_varchar = true,
+                  strict_mode = false) n
     LEFT JOIN read_csv('{{dir_aux}}/NCM_CUCI.csv',
-                  delim = ';', header = true, quote = '"', all_varchar = true) c
+                  delim = ';', header = true, quote = '"', all_varchar = true,
+                  strict_mode = false) c
       ON n.CO_CUCI_ITEM = c.CO_CUCI_ITEM
   )
   SELECT
@@ -53,11 +63,11 @@ COPY (
   FROM dados d
   LEFT JOIN read_csv('{{dir_aux}}/PAIS.csv',
                      delim = ';', header = true, quote = '"',
-                     all_varchar = true) p
+                     all_varchar = true, strict_mode = false) p
     ON d.CO_PAIS = p.CO_PAIS
   LEFT JOIN read_csv('{{dir_aux}}/UF.csv',
                      delim = ';', header = true, quote = '"',
-                     all_varchar = true) u
+                     all_varchar = true, strict_mode = false) u
     ON d.SG_UF_NCM = u.SG_UF
   LEFT JOIN ncm_grupo g
     ON d.CO_NCM = g.CO_NCM
