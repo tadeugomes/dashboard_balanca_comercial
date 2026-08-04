@@ -44,8 +44,12 @@ COPY (
       WHEN 7 THEN 'jul.' WHEN 8 THEN 'ago.' WHEN 9  THEN 'set.'
       WHEN 10 THEN 'out.' WHEN 11 THEN 'nov.' WHEN 12 THEN 'dez.'
     END                      AS nome_mes,
-    SUM(d.peso_liquido_kg)   AS peso_liquido_kg,
-    SUM(d.valor_fob_dolar)   AS valor_fob_dolar
+    -- Escala legada preservada de propósito: o ETL original gravava peso em
+    -- milhões de toneladas e valor em milhões de dólares, apesar dos nomes
+    -- de coluna sugerirem kg e dólar. dashboard.qmd rotula os eixos nessas
+    -- unidades; mudar a escala aqui sem mudar os nomes quebraria o dashboard.
+    SUM(d.peso_liquido_kg) / 1000000000 AS peso_liquido_kg,
+    SUM(d.valor_fob_dolar) / 1000000    AS valor_fob_dolar
   FROM dados d
   LEFT JOIN read_csv('{{dir_aux}}/PAIS.csv',
                      delim = ';', header = true, quote = '"',

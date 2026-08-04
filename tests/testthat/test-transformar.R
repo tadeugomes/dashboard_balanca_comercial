@@ -71,9 +71,12 @@ test_that("transformar_ano agrega e produz o schema exato do dashboard", {
       "ano", "mes", "nome_mes", "peso_liquido_kg", "valor_fob_dolar")
   )
   # As duas linhas de janeiro compartilham todas as chaves e devem somar.
+  # Escala legada preservada de propósito: valor_fob_dolar sai em milhões de
+  # dólares (/ 1e6) e peso_liquido_kg em milhões de toneladas (/ 1e9), apesar
+  # dos nomes de coluna. Ver teste de escala mais abaixo.
   expect_equal(nrow(saida), 2L)
-  expect_equal(saida$valor_fob_dolar[1], 4000)
-  expect_equal(saida$peso_liquido_kg[1], 300)
+  expect_equal(saida$valor_fob_dolar[1], 4000 / 1000000, tolerance = 1e-9)
+  expect_equal(saida$peso_liquido_kg[1], 300 / 1000000000, tolerance = 1e-12)
 
   # O schema não é só nome de coluna: o dashboard e a validação da Task 6
   # exigem os TIPOS abaixo. ano/mes precisam ser BIGINT (int64) porque
@@ -196,4 +199,58 @@ test_that("de-para de região cobre as cinco regiões, inclusive Centro-Oeste co
     expect_equal(linha$no_regiao, unname(esperado[mes]),
                  info = paste("mes", mes))
   }
+})
+
+# Teste adicional (rodada de correção 2, fora do brief original): o ETL
+# legado gravava peso em milhões de toneladas e valor em milhões de dólares,
+# apesar dos nomes de coluna sugerirem kg e dólar -- verificado empiricamente
+# contra EXP_2014.csv real e o parquet em produção (razão exata 1e9 e 1e6).
+# dashboard.qmd rotula os eixos nessas unidades, então a escala é
+# preservada de propósito. Esta fixture usa valores redondos e grandes o
+# bastante para que os dois divisores fiquem inequívocos: um mutante que
+# troque 1e9 por 1e6 (ou vice-versa) tem que quebrar este teste.
+montar_fixture_escala <- function() {
+  dir <- tempfile("fixture_escala")
+  dir.create(file.path(dir, "aux"), recursive = TRUE)
+
+  writeLines(c(
+    '"CO_ANO";"CO_MES";"CO_NCM";"CO_UNID";"CO_PAIS";"SG_UF_NCM";"CO_VIA";"CO_URF";"QT_ESTAT";"KG_LIQUIDO";"VL_FOB"',
+    '"2025";"01";"10011000";"10";"063";"MA";"01";"0817800";1;2000000000;5000000'
+  ), file.path(dir, "EXP_2025.csv"))
+
+  writeLines(c(
+    '"CO_PAIS";"CO_PAIS_ISON3";"CO_PAIS_ISOA3";"NO_PAIS";"NO_PAIS_ING";"NO_PAIS_ESP"',
+    '"063";"076";"BRA";"Índia";"India";"India"'
+  ), file.path(dir, "aux", "PAIS.csv"))
+
+  writeLines(c(
+    '"CO_UF";"SG_UF";"NO_UF";"NO_REGIAO"',
+    '"21";"MA";"Maranhão";"REGIAO NORDESTE"'
+  ), file.path(dir, "aux", "UF.csv"))
+
+  writeLines(c(
+    '"CO_NCM";"CO_UNID";"CO_SH6";"CO_PPE";"CO_PPI";"CO_FAT_AGREG";"CO_CUCI_ITEM";"CO_CGCE_N3";"CO_SIIT";"CO_ISIC_CLASSE";"CO_EXP_SUBSET";"NO_NCM_POR";"NO_NCM_ESP";"NO_NCM_ING"',
+    '"10011000";"10";"100110";"0";"0";"1";"04110";"210";"1";"0111";"0";"Trigo";"Trigo";"Wheat"'
+  ), file.path(dir, "aux", "NCM.csv"))
+
+  writeLines(c(
+    '"CO_CUCI_ITEM";"NO_CUCI_ITEM";"CO_CUCI_SUB";"NO_CUCI_SUB";"CO_CUCI_GRUPO";"NO_CUCI_GRUPO";"CO_CUCI_DIVISAO";"NO_CUCI_DIVISAO";"CO_CUCI_SEC";"NO_CUCI_SEC"',
+    '"04110";"Trigo";"041";"Trigo";"041";"Trigo e centeio, não moídos";"04";"Cereais";"0";"Alimentos"'
+  ), file.path(dir, "aux", "NCM_CUCI.csv"))
+
+  dir
+}
+
+test_that("valor_fob_dolar e peso_liquido_kg preservam a escala legada (milhões)", {
+  dir <- montar_fixture_escala()
+  destino <- file.path(dir, "saida.parquet")
+  transformar_ano(file.path(dir, "EXP_2025.csv"), file.path(dir, "aux"),
+                  destino, caminho_sql = SQL_TESTE)
+  saida <- ler_saida(destino)
+
+  expect_equal(nrow(saida), 1L)
+  # VL_FOB = 5.000.000  ->  valor_fob_dolar = 5   (divisor 1e6)
+  expect_equal(saida$valor_fob_dolar[1], 5, tolerance = 1e-9)
+  # KG_LIQUIDO = 2.000.000.000  ->  peso_liquido_kg = 2   (divisor 1e9)
+  expect_equal(saida$peso_liquido_kg[1], 2, tolerance = 1e-9)
 })
