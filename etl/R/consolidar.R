@@ -18,7 +18,7 @@ consolidar_fluxo <- function(parquets_anuais, destino_parquet) {
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
 
   DBI::dbExecute(con, sprintf(
-    "COPY (SELECT * FROM read_parquet([%s])) TO '%s'
+    "COPY (SELECT * FROM read_parquet([%s], union_by_name = true)) TO '%s'
      (FORMAT PARQUET, COMPRESSION ZSTD)",
     lista, destino_parquet
   ))
