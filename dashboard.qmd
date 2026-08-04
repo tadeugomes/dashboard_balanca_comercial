@@ -7,13 +7,13 @@ format:
       theme: yeti
 server: shiny
 editor: source
+runtime: shiny
 
 ---
 
 ```{r}
 #| context: setup
 
-# install.packages("golem")
 library(golem)
 library(leaflet)
 library(leaflet.providers)
