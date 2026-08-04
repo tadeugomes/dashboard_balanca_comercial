@@ -4,7 +4,8 @@
 # Baixa com repetição e espera crescente. O servidor do MDIC é lento e derruba
 # conexões em arquivos grandes; desistir na primeira falha tornaria o pipeline
 # não confiável.
-baixar_arquivo <- function(url, destino, tentativas = 3L) {
+baixar_arquivo <- function(url, destino, tentativas = 3L, espera_base = 5,
+                           validador = NULL) {
   dir.create(dirname(destino), recursive = TRUE, showWarnings = FALSE)
 
   for (tentativa in seq_len(tentativas)) {
@@ -16,13 +17,21 @@ baixar_arquivo <- function(url, destino, tentativas = 3L) {
 
     if (!inherits(resultado, "try-error") && file.exists(parcial) &&
         file.size(parcial) > 0) {
+      # Se há validador, aplica agora. Conteúdo inválido é falha permanente.
+      if (!is.null(validador)) {
+        if (!validador(parcial)) {
+          unlink(parcial)
+          stop("Conteúdo inválido em ", url)
+        }
+      }
+
       file.rename(parcial, destino)
       return(invisible(destino))
     }
 
     unlink(parcial)
     if (tentativa < tentativas) {
-      espera <- 5 * tentativa
+      espera <- espera_base * tentativa
       message("Tentativa ", tentativa, " falhou para ", basename(url),
               "; nova tentativa em ", espera, "s")
       Sys.sleep(espera)
@@ -49,4 +58,25 @@ converter_para_utf8 <- function(caminho) {
   writeBin(charToRaw(texto), con)
 
   invisible(caminho)
+}
+
+# Retorna uma função validadora que verifica se um arquivo CSV contém
+# todas as colunas esperadas na primeira linha. Uso: passar o resultado
+# como argumento `validador` para `baixar_arquivo()`.
+validador_csv <- function(colunas_esperadas) {
+  function(caminho) {
+    linhas <- tryCatch(
+      readLines(caminho, n = 1, encoding = "UTF-8"),
+      error = function(e) ""
+    )
+
+    if (length(linhas) == 0) {
+      return(FALSE)
+    }
+
+    primeira_linha <- linhas[1]
+    all(sapply(colunas_esperadas, function(coluna) {
+      grepl(coluna, primeira_linha, fixed = TRUE)
+    }))
+  }
 }

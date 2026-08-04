@@ -29,8 +29,69 @@ test_that("converter_para_utf8 é idempotente em arquivo já ASCII", {
 test_that("baixar_arquivo desiste após esgotar as tentativas", {
   destino <- tempfile(fileext = ".csv")
   expect_error(
-    baixar_arquivo("https://inexistent-domain-xyz-12345.com/arquivo.csv",
-                   destino, tentativas = 2L),
+    baixar_arquivo("http://127.0.0.1:1/arquivo.csv",
+                   destino, tentativas = 2L, espera_base = 0.1),
     "Falha ao baixar"
   )
+})
+
+test_that("baixar_arquivo sem tentativas repetidas não espera", {
+  destino <- tempfile(fileext = ".csv")
+  tempo <- system.time(
+    tryCatch(
+      baixar_arquivo("http://127.0.0.1:1/arquivo.csv",
+                     destino, tentativas = 1L, espera_base = 100),
+      error = function(e) NULL
+    )
+  )
+  # Com tentativas = 1, não há espera. Mesmo com espera_base = 100,
+  # deve ser bem rápido (< 1 segundo).
+  expect_lt(tempo["elapsed"], 1.0)
+})
+
+test_that("baixar_arquivo com múltiplas tentativas espera de forma crescente", {
+  destino <- tempfile(fileext = ".csv")
+  tempo <- system.time(
+    tryCatch(
+      baixar_arquivo("http://127.0.0.1:1/arquivo.csv",
+                     destino, tentativas = 3L, espera_base = 0.1),
+      error = function(e) NULL
+    )
+  )
+  # Com tentativas = 3 e espera_base = 0.1:
+  # Espera após tentativa 1: 0.1 * 1 = 0.1s
+  # Espera após tentativa 2: 0.1 * 2 = 0.2s
+  # Total esperado: >= 0.3s (com margem para execução, esperamos > 0.2)
+  expect_gt(tempo["elapsed"], 0.2)
+})
+
+test_that("validador_csv aceita CSV com colunas esperadas", {
+  arquivo <- tempfile(fileext = ".csv")
+  writeLines("CO_ANO;CO_MES;VL_EXPORTACAO\n2026;01;1000", arquivo)
+
+  validador <- validador_csv(c("CO_ANO", "CO_MES", "VL_EXPORTACAO"))
+  expect_true(validador(arquivo))
+})
+
+test_that("validador_csv rejeita CSV faltando colunas", {
+  arquivo <- tempfile(fileext = ".csv")
+  writeLines("CO_ANO;CO_MES\n2026;01", arquivo)
+
+  validador <- validador_csv(c("CO_ANO", "VL_EXPORTACAO"))
+  expect_false(validador(arquivo))
+})
+
+test_that("validador_csv é função que retorna função", {
+  validador <- validador_csv(c("COL1", "COL2"))
+  expect_true(is.function(validador))
+
+  # Arquivo com colunas esperadas
+  arquivo_ok <- tempfile(fileext = ".csv")
+  writeLines("COL1;COL2;COL3", arquivo_ok)
+  expect_true(validador(arquivo_ok))
+
+  # Arquivo faltando coluna
+  arquivo_invalido <- tempfile(fileext = ".csv")
+  writeLines("COL1;COL3", arquivo_invalido)
+  expect_false(validador(arquivo_invalido))
 })
