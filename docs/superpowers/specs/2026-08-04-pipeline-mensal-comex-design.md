@@ -88,7 +88,14 @@ O MDIC republica os arquivos anuais inteiros e **revisa meses anteriores retroat
 
 ### Schema de saída
 
-Idêntico ao dos parquets atuais — o dashboard não precisa de adaptação para lê-los:
+Nomes e ordem idênticos aos dos parquets atuais. **Uma diferença deliberada:**
+`ano` e `mes` saem como int64, enquanto os parquets em produção usam int32.
+
+Isso não é descuido. O `dashboard.qmd` já declara `ano = int64()` e `mes = int64()`
+no schema que passa ao Arrow — arquivo e consumidor divergem hoje, e o Arrow faz
+o cast em silêncio a cada leitura. Gerar int64 alinha o arquivo ao que o
+dashboard declara e encerra a divergência. A conversão é um alargamento, então
+nenhum valor se perde.
 
 | Coluna | Tipo |
 |---|---|

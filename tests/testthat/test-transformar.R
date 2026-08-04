@@ -48,6 +48,15 @@ ler_saida <- function(caminho) {
                                caminho))
 }
 
+# DESCRIBE devolve nome e tipo de cada coluna do parquet, na visão do
+# DuckDB -- é o que permite verificar tipo, não só nome.
+descrever_saida <- function(caminho) {
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  DBI::dbGetQuery(con, sprintf("DESCRIBE SELECT * FROM read_parquet('%s')",
+                               caminho))
+}
+
 test_that("transformar_ano agrega e produz o schema exato do dashboard", {
   dir <- montar_fixture()
   destino <- file.path(dir, "saida.parquet")
@@ -65,6 +74,20 @@ test_that("transformar_ano agrega e produz o schema exato do dashboard", {
   expect_equal(nrow(saida), 2L)
   expect_equal(saida$valor_fob_dolar[1], 4000)
   expect_equal(saida$peso_liquido_kg[1], 300)
+
+  # O schema não é só nome de coluna: o dashboard e a validação da Task 6
+  # exigem os TIPOS abaixo. ano/mes precisam ser BIGINT (int64) porque
+  # dashboard.qmd declara int64() no schema Arrow que lê o parquet -- gerar
+  # INTEGER (int32) aqui criaria um cast silencioso na leitura.
+  tipos_esperados <- c(
+    no_pais = "VARCHAR", no_uf = "VARCHAR", no_regiao = "VARCHAR",
+    no_cuci_grupo = "VARCHAR", ano = "BIGINT", mes = "BIGINT",
+    nome_mes = "VARCHAR", peso_liquido_kg = "DOUBLE",
+    valor_fob_dolar = "DOUBLE"
+  )
+  descricao <- descrever_saida(destino)
+  tipos_obtidos <- setNames(descricao$column_type, descricao$column_name)
+  expect_equal(tipos_obtidos[names(tipos_esperados)], tipos_esperados)
 })
 
 test_that("transformar_ano normaliza a região e preserva acentos", {
