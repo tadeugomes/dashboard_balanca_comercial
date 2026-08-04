@@ -53,44 +53,51 @@ test_that("consolidar_fluxo empilha os anos preservando ordem, valores, schema e
   expect_equal(schema$column_type, esperado$column_type)
 })
 
-test_that("consolidar_fluxo preserva colunas com schemas divergentes", {
+test_that("consolidar_fluxo alinha e preserva colunas extras via union_by_name", {
   dir <- tempfile("consolidar"); dir.create(dir)
 
-  # Parquet 1: 9 colunas padrão
+  # Parquet A (ano 2024): 9 colunas padrão
   a <- gravar_parquet(linha(2024, 100), file.path(dir, "2024.parquet"))
 
-  # Parquet 2: colunas em ordem diferente (simula arquivo legado)
-  df2 <- data.frame(
-    valor_fob_dolar = 200,
-    ano = 2025L,
-    mes = 1L,
-    peso_liquido_kg = 10,
-    nome_mes = "jan.",
-    no_cuci_grupo = "Trigo",
-    no_regiao = "Nordeste",
-    no_uf = "Maranhão",
-    no_pais = "Índia",
+  # Parquet B (ano 2025): 9 colunas padrão + coluna extra co_ncm
+  # Simula arquivo gerado por versão diferente do ETL que inclui código NCM
+  df_com_ncm <- data.frame(
+    no_pais = "Índia", no_uf = "Maranhão", no_regiao = "Nordeste",
+    no_cuci_grupo = "Trigo", ano = 2025L, mes = 1L,
+    nome_mes = "jan.", peso_liquido_kg = 10, valor_fob_dolar = 200,
+    co_ncm = "1001.90.00",
     stringsAsFactors = FALSE
   )
-  b <- gravar_parquet(df2, file.path(dir, "2025.parquet"))
+
+  # Grava parquet B com coluna extra
+  con_aux <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con_aux, shutdown = TRUE), add = TRUE)
+  duckdb::duckdb_register(con_aux, "tmp", df_com_ncm)
+  DBI::dbExecute(con_aux, sprintf(
+    "COPY (SELECT no_pais, no_uf, no_regiao, no_cuci_grupo, nome_mes, CAST(ano AS BIGINT) AS ano, CAST(mes AS BIGINT) AS mes, peso_liquido_kg, valor_fob_dolar, co_ncm FROM tmp) TO '%s' (FORMAT PARQUET)",
+    file.path(dir, "2025.parquet")))
+  b <- file.path(dir, "2025.parquet")
 
   destino <- file.path(dir, "final.parquet")
 
+  # Consolidar com union_by_name=true protege a coluna extra
   consolidar_fluxo(c(a, b), destino)
 
   con <- DBI::dbConnect(duckdb::duckdb())
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
 
-  # Verificar que nenhuma coluna se perdeu
+  # Verificar dados e schema
   saida <- DBI::dbGetQuery(con, sprintf(
     "SELECT * FROM read_parquet('%s') ORDER BY ano", destino))
 
   expect_equal(nrow(saida), 2L)
-  # Verificar que todas as 9 colunas estão presentes
-  expected_cols <- c("no_pais", "no_uf", "no_regiao", "no_cuci_grupo", "nome_mes", "ano", "mes", "peso_liquido_kg", "valor_fob_dolar")
+  # Verificar que a coluna extra sobreviveu
+  expected_cols <- c("no_pais", "no_uf", "no_regiao", "no_cuci_grupo", "nome_mes", "ano", "mes", "peso_liquido_kg", "valor_fob_dolar", "co_ncm")
   expect_equal(sort(names(saida)), sort(expected_cols))
-  # Verificar valores de ambos os anos
-  expect_equal(saida$valor_fob_dolar, c(100, 200))
+  # Linha de A tem NULL na coluna extra
+  expect_true(is.na(saida$co_ncm[1]))
+  # Linha de B tem valor na coluna extra
+  expect_equal(saida$co_ncm[2], "1001.90.00")
 })
 
 test_that("consolidar_fluxo recusa lista vazia", {
