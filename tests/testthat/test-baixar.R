@@ -54,15 +54,16 @@ test_that("baixar_arquivo com múltiplas tentativas espera de forma crescente", 
   tempo <- system.time(
     tryCatch(
       baixar_arquivo("http://127.0.0.1:1/arquivo.csv",
-                     destino, tentativas = 3L, espera_base = 0.1),
+                     destino, tentativas = 4L, espera_base = 0.2),
       error = function(e) NULL
     )
   )
-  # Com tentativas = 3 e espera_base = 0.1:
-  # Espera após tentativa 1: 0.1 * 1 = 0.1s
-  # Espera após tentativa 2: 0.1 * 2 = 0.2s
-  # Total esperado: >= 0.3s (com margem para execução, esperamos > 0.2)
-  expect_gt(tempo["elapsed"], 0.2)
+  # Com tentativas = 4L e espera_base = 0.2:
+  # Espera crescente: 0.2*1 + 0.2*2 + 0.2*3 = 0.2 + 0.4 + 0.6 = 1.2s
+  # Espera constante: 0.2 + 0.2 + 0.2 = 0.6s
+  # Limiar 0.9s separa bem as duas hipóteses, com ~0.3s de margem em cada lado.
+  # Sys.sleep nunca demora menos que o pedido, máquina lenta empurra para cima (sem falso negativo).
+  expect_gt(tempo["elapsed"], 0.9)
 })
 
 test_that("validador_csv aceita CSV com colunas esperadas", {
