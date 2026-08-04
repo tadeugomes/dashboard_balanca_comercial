@@ -19,7 +19,9 @@ ANO_INICIAL <- 2014L
 # ano_inicial é parâmetro para que os testes possam usar fixtures curtos sem
 # que a verificação de lacuna acuse todos os anos ausentes desde 2014.
 validar_parquet <- function(caminho, totais_anteriores = NULL,
-                            tolerancia = 0.01, ano_inicial = ANO_INICIAL) {
+                            tolerancia = 0.01, ano_inicial = ANO_INICIAL,
+                            faixa_valor = c(50e3, 800e3),
+                            faixa_peso  = c(50, 2000)) {
   if (!file.exists(caminho)) {
     stop("Parquet não encontrado: ", caminho)
   }
@@ -53,7 +55,9 @@ validar_parquet <- function(caminho, totais_anteriores = NULL,
 
   # --- cobertura ------------------------------------------------------------
   cobertura <- DBI::dbGetQuery(con, sprintf(
-    "SELECT ano, COUNT(DISTINCT mes) AS meses, SUM(valor_fob_dolar) AS total
+    "SELECT ano, COUNT(DISTINCT mes) AS meses,
+            SUM(valor_fob_dolar)  AS total,
+            SUM(peso_liquido_kg)  AS peso_total
      FROM %s GROUP BY ano ORDER BY ano", fonte))
 
   anos <- cobertura$ano
@@ -71,6 +75,31 @@ validar_parquet <- function(caminho, totais_anteriores = NULL,
     problemas <- c(problemas, paste0(
       "ano fechado sem os 12 meses: ", paste(incompletos, collapse = ", ")))
   }
+
+  # --- ordem de grandeza ------------------------------------------------------
+  # Erro de escala (ex.: agregação que soma sem dividir por 1e6/1e9) produz um
+  # número plausível o bastante para passar por todas as outras verificações
+  # — em especial na primeira execução, quando ainda não existe
+  # totais_anteriores para a regressão comparar. Vale só para anos fechados
+  # com os 12 meses (mesmo critério da checagem acima): o ano corrente é
+  # parcial por natureza e ficaria abaixo da faixa em janeiro, o que não é
+  # um erro.
+  fechados_completos <- fechados[fechados$meses == 12L, ]
+
+  verificar_faixa <- function(valores, anos_ref, faixa, medida) {
+    if (is.null(faixa)) return(character(0))
+    fora <- which(valores < faixa[1] | valores > faixa[2])
+    if (length(fora) == 0) return(character(0))
+    sprintf(
+      "ano %s: %s fora da faixa plausível [%.0f, %.0f] (observado %.0f)",
+      anos_ref[fora], medida, faixa[1], faixa[2], valores[fora])
+  }
+
+  problemas <- c(problemas,
+    verificar_faixa(fechados_completos$total, fechados_completos$ano,
+                     faixa_valor, "valor_fob_dolar"),
+    verificar_faixa(fechados_completos$peso_total, fechados_completos$ano,
+                     faixa_peso, "peso_liquido_kg"))
 
   # --- integridade ----------------------------------------------------------
   ruins <- DBI::dbGetQuery(con, sprintf(
