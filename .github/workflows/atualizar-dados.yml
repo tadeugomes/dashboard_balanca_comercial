@@ -35,6 +35,39 @@ jobs:
           r-version: '4.4.1'
           use-public-rspm: true
 
+      # setup-renv (próximo passo) instala os PACOTES R do lockfile, mas não
+      # as bibliotecas de sistema (C/C++) de que as extensões nativas deles
+      # dependem. Sem isso, setup-renv falha tentando compilar/carregar
+      # `igraph` (faltando libglpk.so.40 — foi o que derrubou a primeira
+      # execução real deste workflow). Mapeamento lib -> pacote(s) R do
+      # renv.lock que a exigem:
+      #   libglpk-dev                                -> igraph (dep. transitiva de leaflet/golem)
+      #   libgdal-dev libproj-dev libgeos-dev
+      #     libudunits2-dev                          -> terra, raster, sp (pilha espacial dos mapas do leaflet)
+      #   libxml2-dev                                -> XML
+      #   libssl-dev                                 -> openssl
+      #   libcurl4-openssl-dev                       -> curl (também usado diretamente pelo ETL em etl/R/baixar.R)
+      #   libpng-dev                                 -> png
+      #   libfontconfig1-dev libharfbuzz-dev
+      #     libfribidi-dev                           -> trio padrão de shaping de texto exigido para compilar
+      #                                                  pacotes gráficos com suporte a fontes a partir do
+      #                                                  código-fonte, quando o binário do RSPM não cobre a
+      #                                                  combinação de versões
+      # GDAL e companhia são pesados e podem somar vários minutos ao job.
+      # Aceitável: o job roda uma vez por mês e tem 180 min de timeout. Não
+      # remova libs desta lista para "otimizar" sem ter certeza de que
+      # nenhum pacote do lockfile ainda precisa delas.
+      - name: Instalar dependências de sistema dos pacotes R
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libglpk-dev \
+            libgdal-dev libproj-dev libgeos-dev libudunits2-dev \
+            libxml2-dev \
+            libssl-dev libcurl4-openssl-dev \
+            libpng-dev \
+            libfontconfig1-dev libharfbuzz-dev libfribidi-dev
+
       - uses: r-lib/actions/setup-renv@v2
 
       # Cache dos parquets anuais já convertidos (etl/.trabalho/anos). A
