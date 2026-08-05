@@ -105,7 +105,9 @@ estado <- ler_estado(CAMINHO_ESTADO)
 
 remotos <- lapply(stats::setNames(fontes$url, fontes$chave), metadados_remotos)
 
-pendentes <- if (forcar) fontes else precisa_atualizar(fontes, estado, remotos)
+pendentes <- if (forcar) fontes else {
+  precisa_atualizar(fontes, estado, remotos, dir_cache = DIR_CACHE)
+}
 
 if (nrow(pendentes) == 0) {
   registrar("Nenhuma mudança na fonte. Encerrando sem reprocessar.")
@@ -139,13 +141,13 @@ for (i in seq_len(nrow(pendentes))) {
 
   csv <- file.path(DIR_TRABALHO, paste0(item$chave, ".csv"))
 
-  # "Conteúdo inválido" (validador_csv rejeitou o cabeçalho) é falha
-  # PERMANENTE daquele ano — em geral porque o MDIC ainda não publicou o
-  # arquivo — mas não da execução mensal como um todo: registramos e seguimos
-  # com os demais anos. "Falha ao baixar" (esgotadas as tentativas de rede)
-  # é problema transitório de infraestrutura, não do dado em si; não faz
-  # sentido varrer os 26 arquivos sabendo que a rede está com problema, então
-  # interrompemos a execução para que o operador investigue.
+  # "Conteúdo inválido" (validador_csv rejeitou o cabeçalho) é falha do
+  # ano — em geral porque o MDIC ainda não publicou o arquivo — mas não da
+  # execução mensal como um todo: registramos e seguimos com os demais anos.
+  # "Falha ao baixar" (esgotadas as tentativas de rede) é problema
+  # transitório de infraestrutura, não do dado em si; não faz sentido varrer
+  # os 26 arquivos sabendo que a rede está com problema, então interrompemos
+  # a execução para que o operador investigue.
   tryCatch({
     baixar_arquivo(item$url, csv, tentativas = TENTATIVAS_ANUAIS,
                    espera_base = ESPERA_ANUAIS,
@@ -173,6 +175,27 @@ for (i in seq_len(nrow(pendentes))) {
       registrar("AVISO:", item$chave,
                 "não publicado ou com conteúdo inválido -- pulando este ano.")
       anos_pulados <<- c(anos_pulados, item$chave)
+
+      # Registra que este metadado remoto (o do corpo inválido, ex.: o PHP
+      # do Joomla que o MDIC devolve para ano ainda não publicado) já foi
+      # visto, marcando nao_publicado = TRUE. Isso NÃO é o mesmo que
+      # registrar sucesso: não há parquet nem totais_por_ano para este ano.
+      # É só "não adianta tentar de novo com este mesmo Last-Modified e
+      # Content-Length" -- quando o MDIC publicar o arquivo de verdade, os
+      # metadados remotos mudam e precisa_atualizar() reenfileira o ano
+      # sozinho (ver estado.R). Sem isto, o ano fica pendente para sempre:
+      # o atalho "nenhuma mudança na fonte" nunca mais dispara a partir do
+      # primeiro ano não publicado, e toda execução mensal baixa auxiliares,
+      # consolida e reimplanta mesmo sem dado novo algum.
+      # <<- é obrigatório aqui: este bloco é o corpo de error = function(e)
+      # {...}, então uma atribuição composta com <- comum (estado$arquivos[[
+      # chave]] <- valor) criaria um `estado` local a essa função e nunca
+      # chegaria ao `estado` do script (mesmo problema que anos_pulados <<-
+      # já resolve acima). Com <<-, a atualização é feita no `estado` do
+      # escopo delimitador, que é o que gravar_estado() usa a seguir.
+      estado$arquivos[[item$chave]] <<- c(remotos[[item$chave]],
+                                          list(nao_publicado = TRUE))
+      gravar_estado(estado, CAMINHO_ESTADO)
     } else {
       registrar("ERRO ao processar", item$chave, ":", msg)
       registrar("Falha de rede (ou erro inesperado) -- interrompendo a execução.",

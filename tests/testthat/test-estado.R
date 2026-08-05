@@ -23,8 +23,15 @@ test_that("gravar e reler preserva o conteúdo", {
 })
 
 test_that("precisa_atualizar seleciona apenas o que mudou", {
+  dir_cache <- tempfile()
+  dir.create(dir_cache)
+  # EXP_2025 não mudou e tem parquet no cache -> não fica pendente.
+  file.create(file.path(dir_cache, "exportacao_2025.parquet"))
+
   fontes <- data.frame(
     chave = c("EXP_2025", "EXP_2026"),
+    fluxo = c("exportacao", "exportacao"),
+    ano = c(2025L, 2026L),
     url = c("u1", "u2"),
     stringsAsFactors = FALSE
   )
@@ -37,18 +44,108 @@ test_that("precisa_atualizar seleciona apenas o que mudou", {
     EXP_2026 = list(last_modified = "C", content_length = "9")   # mudou
   )
 
-  pendentes <- precisa_atualizar(fontes, estado, remotos)
+  pendentes <- precisa_atualizar(fontes, estado, remotos, dir_cache = dir_cache)
 
   expect_equal(pendentes$chave, "EXP_2026")
 })
 
 test_that("precisa_atualizar inclui arquivo nunca visto", {
-  fontes <- data.frame(chave = "EXP_2027", url = "u", stringsAsFactors = FALSE)
+  dir_cache <- tempfile()
+  dir.create(dir_cache)
+
+  fontes <- data.frame(chave = "EXP_2027", fluxo = "exportacao", ano = 2027L,
+                       url = "u", stringsAsFactors = FALSE)
   remotos <- list(EXP_2027 = list(last_modified = "X", content_length = "5"))
 
-  pendentes <- precisa_atualizar(fontes, list(arquivos = list()), remotos)
+  pendentes <- precisa_atualizar(fontes, list(arquivos = list()), remotos,
+                                 dir_cache = dir_cache)
 
   expect_equal(nrow(pendentes), 1L)
+})
+
+test_that("precisa_atualizar reprocessa ano registrado no estado mas sem parquet no cache (C1)", {
+  # Simula o cenário do cache expirado no GitHub Actions: o estado.json foi
+  # trazido pelo checkout com o ano registrado, mas etl/.trabalho/anos está
+  # vazio porque o cache do actions/cache expirou. Mesmo com metadados
+  # idênticos, o ano tem que voltar à fila -- senão a consolidação usa só o
+  # que sobrou no cache e produz uma série com lacunas.
+  dir_cache <- tempfile()
+  dir.create(dir_cache)
+  # Nenhum parquet é criado em dir_cache.
+
+  fontes <- data.frame(chave = "EXP_2025", fluxo = "exportacao", ano = 2025L,
+                       url = "u", stringsAsFactors = FALSE)
+  estado <- list(arquivos = list(
+    EXP_2025 = list(last_modified = "A", content_length = "1")
+  ))
+  remotos <- list(EXP_2025 = list(last_modified = "A", content_length = "1"))
+
+  pendentes <- precisa_atualizar(fontes, estado, remotos, dir_cache = dir_cache)
+
+  expect_equal(pendentes$chave, "EXP_2025")
+})
+
+test_that("precisa_atualizar não reprocessa ano registrado E com parquet no cache (C1)", {
+  dir_cache <- tempfile()
+  dir.create(dir_cache)
+  file.create(file.path(dir_cache, "exportacao_2025.parquet"))
+
+  fontes <- data.frame(chave = "EXP_2025", fluxo = "exportacao", ano = 2025L,
+                       url = "u", stringsAsFactors = FALSE)
+  estado <- list(arquivos = list(
+    EXP_2025 = list(last_modified = "A", content_length = "1")
+  ))
+  remotos <- list(EXP_2025 = list(last_modified = "A", content_length = "1"))
+
+  pendentes <- precisa_atualizar(fontes, estado, remotos, dir_cache = dir_cache)
+
+  expect_equal(nrow(pendentes), 0L)
+})
+
+test_that("precisa_atualizar não reenfileira ano marcado como não publicado enquanto os metadados remotos não mudarem (C2)", {
+  # EXP_2027 foi "pulado" numa execução anterior: o MDIC devolveu o corpo do
+  # Joomla, run.R registrou o metadado remoto com nao_publicado = TRUE, e não
+  # existe (nunca existiu) parquet para esse ano no cache. Isso não pode virar
+  # pendência eterna: sem essa exceção, o atalho "nenhuma mudança na fonte"
+  # nunca dispara depois de o ano corrente virar, porque o mesmo ano some do
+  # cache toda hora que o actions/cache expira.
+  dir_cache <- tempfile()
+  dir.create(dir_cache)
+  # Nenhum parquet para EXP_2027 -- e nunca haverá, o ano não foi publicado.
+
+  fontes <- data.frame(chave = "EXP_2027", fluxo = "exportacao", ano = 2027L,
+                       url = "u", stringsAsFactors = FALSE)
+  estado <- list(arquivos = list(
+    EXP_2027 = list(last_modified = "Tue, 03 Sep 2019 00:00:00 GMT",
+                    content_length = "1420", nao_publicado = TRUE)
+  ))
+  remotos <- list(EXP_2027 = list(last_modified = "Tue, 03 Sep 2019 00:00:00 GMT",
+                                  content_length = "1420"))
+
+  pendentes <- precisa_atualizar(fontes, estado, remotos, dir_cache = dir_cache)
+
+  expect_equal(nrow(pendentes), 0L)
+})
+
+test_that("precisa_atualizar reenfileira ano não publicado quando os metadados remotos mudam (C2)", {
+  # Quando o MDIC finalmente publica o arquivo de verdade, Last-Modified e/ou
+  # Content-Length mudam -- o ano tem que voltar à fila mesmo estando marcado
+  # como não publicado.
+  dir_cache <- tempfile()
+  dir.create(dir_cache)
+
+  fontes <- data.frame(chave = "EXP_2027", fluxo = "exportacao", ano = 2027L,
+                       url = "u", stringsAsFactors = FALSE)
+  estado <- list(arquivos = list(
+    EXP_2027 = list(last_modified = "Tue, 03 Sep 2019 00:00:00 GMT",
+                    content_length = "1420", nao_publicado = TRUE)
+  ))
+  remotos <- list(EXP_2027 = list(last_modified = "Fri, 09 Jan 2027 10:00:00 GMT",
+                                  content_length = "68123456"))
+
+  pendentes <- precisa_atualizar(fontes, estado, remotos, dir_cache = dir_cache)
+
+  expect_equal(pendentes$chave, "EXP_2027")
 })
 
 test_that("gravar_estado não deixa arquivo temporário residual no diretório de destino", {
