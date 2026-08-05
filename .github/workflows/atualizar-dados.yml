@@ -35,6 +35,32 @@ jobs:
           r-version: '4.4.1'
           use-public-rspm: true
 
+      # O passo de deploy (rsconnect::deployDoc) chama internamente
+      # quartoInspect() para inspecionar dashboard.qmd antes de empacotar o
+      # bundle -- e para isso precisa do binário `quarto` no PATH, que o
+      # runner não tem por padrão (só R e os pacotes do renv.lock). Sem este
+      # passo, o deploy falha com "`quarto` not found."
+      #
+      # Versão travada em 1.5.57 (não "latest"): é a mesma registrada em
+      # rsconnect/.../balanca_comercial.dcf (quarto_version), a versão com
+      # que o app foi publicado da última vez com sucesso. O shinyapps.io
+      # renderiza o documento do lado dele -- a versão local do Quarto
+      # afeta só a inspeção e o empacotamento feitos por rsconnect aqui no
+      # runner, não a renderização final. Como este job roda uma vez por
+      # mês sem supervisão, reprodutibilidade pesa mais do que ganhar
+      # correções automáticas: uma mudança de formato de bundle entre
+      # versões do Quarto quebraria o deploy silenciosamente, numa hora em
+      # que ninguém está olhando. Para atualizar o Quarto de propósito,
+      # suba este número junto com um teste manual do deploy.
+      #
+      # Colocado logo após o setup-r, com os demais passos de preparação de
+      # ambiente: o custo é baixo (poucos segundos) e assim, se a instalação
+      # do Quarto falhar, o job falha cedo -- antes de gastar tempo com ETL
+      # e download de ~4 GB -- em vez de falhar só no fim, no deploy.
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: '1.5.57'
+
       # setup-renv (próximo passo) instala os PACOTES R do lockfile, mas não
       # as bibliotecas de sistema (C/C++) de que as extensões nativas deles
       # dependem. Sem isso, setup-renv falha tentando compilar/carregar

@@ -1,0 +1,34 @@
+# Controla o que rsconnect empacota ao publicar dashboard.qmd no
+# shinyapps.io (rsconnect::deployDoc). Diferente do .gitignore: o rsconnect
+# NÃO respeita o .gitignore ao montar o bundle, então arquivos ignorados pelo
+# git (como etl/.trabalho/, restaurado do cache do Actions a cada execução)
+# vão juntos para o shinyapps.io a menos que sejam listados aqui.
+#
+# Critério: só entra no bundle o que dashboard.qmd de fato lê em tempo de
+# execução (www/ e os parquets de dados/*.parquet) mais os arquivos de
+# projeto que o rsconnect precisa para inspecionar/renderizar o .qmd.
+# Tudo que é ferramental de desenvolvimento, teste ou ETL fica de fora.
+#
+# NÃO EXCLUIR dados/ -- são os parquets que o dashboard lê (ver
+# dashboard.qmd, arrow::open_dataset("dados/...")). Só dados/*.parquet está
+# no .gitignore (não versionado, vem da Release); aqui ele precisa ir no
+# bundle.
+
+# Cache intermediário do ETL (CSVs brutos e parquets anuais restaurados do
+# cache do Actions) -- 112 MB de material que dashboard.qmd nunca lê.
+etl/.trabalho/
+
+# Suíte de testes automatizados -- não usada pelo app publicado.
+tests/
+
+# Scripts de apoio para desenvolvimento/medição, não referenciados pelo app.
+scripts/
+
+# Documentação do projeto (inclui docs/superpowers, material de processo).
+docs/
+
+# Rascunhos e protótipos legados, anteriores ao dashboard.qmd atual.
+teste.qmd
+teste.html
+teste_files/
+rascunho.R
