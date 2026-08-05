@@ -1,0 +1,141 @@
+{
+  "atualizado_em": "2026-08-04T21:52:12Z",
+  "arquivos": {
+    "EXP_2014": {
+      "last_modified": "Tue, 27 Jul 2021 20:25:15 GMT",
+      "content_length": "71136197"
+    },
+    "EXP_2015": {
+      "last_modified": "Tue, 27 Jul 2021 20:25:16 GMT",
+      "content_length": "70522644"
+    },
+    "EXP_2016": {
+      "last_modified": "Tue, 27 Jul 2021 20:25:17 GMT",
+      "content_length": "73442651"
+    },
+    "EXP_2017": {
+      "last_modified": "Tue, 27 Jul 2021 20:25:18 GMT",
+      "content_length": "73808658"
+    },
+    "EXP_2018": {
+      "last_modified": "Tue, 27 Jul 2021 20:25:19 GMT",
+      "content_length": "75844592"
+    },
+    "EXP_2019": {
+      "last_modified": "Tue, 27 Jul 2021 20:25:20 GMT",
+      "content_length": "92714771"
+    },
+    "EXP_2020": {
+      "last_modified": "Tue, 27 Jul 2021 20:25:35 GMT",
+      "content_length": "89392892"
+    },
+    "EXP_2021": {
+      "last_modified": "Thu, 03 Feb 2022 17:28:09 GMT",
+      "content_length": "98548263"
+    },
+    "EXP_2022": {
+      "last_modified": "Wed, 08 Feb 2023 12:45:52 GMT",
+      "content_length": "99641309"
+    },
+    "EXP_2023": {
+      "last_modified": "Wed, 07 Feb 2024 19:13:21 GMT",
+      "content_length": "103932897"
+    },
+    "EXP_2024": {
+      "last_modified": "Fri, 07 Feb 2025 18:25:40 GMT",
+      "content_length": "106702953"
+    },
+    "EXP_2025": {
+      "last_modified": "Thu, 05 Feb 2026 18:21:06 GMT",
+      "content_length": "113715007"
+    },
+    "EXP_2026": {
+      "last_modified": "Fri, 03 Jul 2026 18:08:38 GMT",
+      "content_length": "55372406"
+    },
+    "IMP_2014": {
+      "last_modified": "Wed, 07 Apr 2021 15:25:03 GMT",
+      "content_length": "139376412"
+    },
+    "IMP_2015": {
+      "last_modified": "Wed, 07 Apr 2021 15:25:01 GMT",
+      "content_length": "130781288"
+    },
+    "IMP_2016": {
+      "last_modified": "Wed, 07 Apr 2021 15:24:52 GMT",
+      "content_length": "123555867"
+    },
+    "IMP_2017": {
+      "last_modified": "Wed, 07 Apr 2021 15:24:32 GMT",
+      "content_length": "134739467"
+    },
+    "IMP_2018": {
+      "last_modified": "Wed, 07 Apr 2021 15:25:13 GMT",
+      "content_length": "138688955"
+    },
+    "IMP_2019": {
+      "last_modified": "Wed, 07 Apr 2021 15:25:07 GMT",
+      "content_length": "141368228"
+    },
+    "IMP_2020": {
+      "last_modified": "Thu, 08 Apr 2021 18:11:52 GMT",
+      "content_length": "130405506"
+    },
+    "IMP_2021": {
+      "last_modified": "Thu, 03 Feb 2022 17:26:03 GMT",
+      "content_length": "146808934"
+    },
+    "IMP_2022": {
+      "last_modified": "Wed, 08 Feb 2023 12:45:34 GMT",
+      "content_length": "148650131"
+    },
+    "IMP_2023": {
+      "last_modified": "Thu, 06 Jun 2024 21:49:13 GMT",
+      "content_length": "152969373"
+    },
+    "IMP_2024": {
+      "last_modified": "Fri, 07 Feb 2025 18:25:29 GMT",
+      "content_length": "166729221"
+    },
+    "IMP_2025": {
+      "last_modified": "Thu, 05 Feb 2026 18:21:04 GMT",
+      "content_length": "175549886"
+    },
+    "IMP_2026": {
+      "last_modified": "Fri, 03 Jul 2026 18:08:33 GMT",
+      "content_length": "87985378"
+    }
+  },
+  "totais_por_ano": {
+    "exportacao": {
+      "2014": 220923.2368,
+      "2015": 186782.3551,
+      "2016": 179526.1292,
+      "2017": 214988.1084,
+      "2018": 231889.5234,
+      "2019": 221126.8076,
+      "2020": 209180.2417,
+      "2021": 280814.5775,
+      "2022": 334136.0382,
+      "2023": 339695.766,
+      "2024": 337046.1617,
+      "2025": 348278.4625,
+      "2026": 184772.8343
+    },
+    "importacao": {
+      "2014": 230823.0188,
+      "2015": 173104.2591,
+      "2016": 139321.3577,
+      "2017": 158951.444,
+      "2018": 185321.9835,
+      "2019": 185927.9676,
+      "2020": 158786.8249,
+      "2021": 219408.0492,
+      "2022": 272610.6869,
+      "2023": 240792.8392,
+      "2024": 262869.6062,
+      "2025": 280208.4338,
+      "2026": 142415.3743
+    }
+  }
+}
