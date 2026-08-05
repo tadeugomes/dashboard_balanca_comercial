@@ -1,0 +1,143 @@
+name: Atualizar dados do Comex Stat
+
+on:
+  schedule:
+    # Dia 10 de cada mês, 09:00 UTC (06:00 em Brasília). O MDIC não publica em
+    # dia fixo; quando nada mudou o job encerra em segundos.
+    - cron: '0 9 10 * *'
+  workflow_dispatch:
+    inputs:
+      forcar:
+        description: 'Reprocessar todos os anos, ignorando o cache'
+        type: boolean
+        default: false
+
+# Sem gatilho de pull_request: o repositório é público e um PR vindo de um
+# fork não pode ter acesso aos secrets de deploy (SHINYAPPS_TOKEN/SECRET).
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    # Generoso: a primeira execução (ou uma reprocessando tudo com `forcar`)
+    # baixa ~4 GB de um servidor lento que derruba conexões com frequência.
+    timeout-minutes: 180
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          # Mesma versão travada em renv.lock (campo R.Version).
+          r-version: '4.4.1'
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-renv@v2
+
+      # Cache dos parquets anuais já convertidos (etl/.trabalho/anos). A
+      # chave usa o hash do estado.json vigente no checkout; restore-keys
+      # por prefixo permite reaproveitar um cache de uma chave anterior
+      # quando não há correspondência exata.
+      - name: Restaurar cache dos parquets anuais
+        uses: actions/cache@v4
+        with:
+          path: etl/.trabalho/anos
+          key: comex-anos-${{ hashFiles('etl/estado.json') }}
+          restore-keys: |
+            comex-anos-
+
+      # Roda antes do ETL: não faz sentido processar ~4 GB de dados se a
+      # suíte já está quebrada. 98 asserções.
+      - name: Executar os testes
+        run: Rscript -e 'testthat::test_dir("tests/testthat", stop_on_failure = TRUE)'
+
+      - name: Executar o ETL
+        run: |
+          if [ "${{ inputs.forcar }}" = "true" ]; then
+            Rscript etl/run.R --forcar
+          else
+            Rscript etl/run.R
+          fi
+
+      # etl/estado.json é o único artefato versionado do pipeline (os
+      # parquets em dados/ não são — ver .gitignore). Publicar só faz
+      # sentido quando ele de fato mudou.
+      - name: Verificar se houve atualização
+        id: mudou
+        run: |
+          if git diff --quiet etl/estado.json; then
+            echo "houve=false" >> "$GITHUB_OUTPUT"
+            echo "Nada mudou na fonte; nada a publicar."
+          else
+            echo "houve=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Comita o rastro auditável do pipeline. [skip ci] evita que este
+      # próprio commit dispare o workflow de novo.
+      - name: Registrar o estado no repositório
+        if: steps.mudou.outputs.houve == 'true'
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add etl/estado.json
+          git commit -m "chore: atualiza dados do Comex Stat [skip ci]"
+          git push
+
+      # Os parquets não são versionados; a Release é o canal de distribuição
+      # deles. Se a Release da tag do mês já existir (reexecução manual no
+      # mesmo mês), gh release create falha — nesse caso, envia os arquivos
+      # para a Release já existente com --clobber.
+      - name: Publicar os parquets como asset de Release
+        if: steps.mudou.outputs.houve == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="dados-$(date +%Y-%m)"
+          gh release create "$TAG" \
+            --title "Dados do Comex Stat — $(date +%Y-%m)" \
+            --notes "Gerado automaticamente pelo pipeline mensal." \
+            dados/ncm_exportacao_agrupado.parquet \
+            dados/ncm_importacao_agrupado.parquet \
+          || gh release upload "$TAG" \
+            dados/ncm_exportacao_agrupado.parquet \
+            dados/ncm_importacao_agrupado.parquet --clobber
+
+      # O pipeline grava os parquets diretamente em dados/, então basta não
+      # apagá-los antes do deploy — dashboard.qmd os lê de lá.
+      - name: Publicar no shinyapps.io
+        if: steps.mudou.outputs.houve == 'true'
+        env:
+          SHINYAPPS_TOKEN:  ${{ secrets.SHINYAPPS_TOKEN }}
+          SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
+        run: |
+          Rscript -e '
+            rsconnect::setAccountInfo(
+              name   = "observatorioportuario",
+              token  = Sys.getenv("SHINYAPPS_TOKEN"),
+              secret = Sys.getenv("SHINYAPPS_SECRET")
+            )
+            rsconnect::deployDoc(
+              "dashboard.qmd",
+              appName = "balanca_comercial",
+              account = "observatorioportuario",
+              forceUpdate = TRUE,
+              logLevel = "verbose"
+            )
+          '
+
+      - name: Abrir issue em caso de falha
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Falha na atualização mensal do Comex Stat" \
+            --body "A execução de $(date +%Y-%m-%d) falhou.
+
+          Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          O dashboard em produção segue com os dados válidos do mês anterior." \
+            --label "automação"
