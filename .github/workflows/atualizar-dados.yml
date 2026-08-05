@@ -87,6 +87,87 @@ jobs:
       - name: Executar os testes
         run: Rscript -e 'testthat::test_dir("tests/testthat", stop_on_failure = TRUE)'
 
+      # O servidor do MDIC (balanca.economia.gov.br) não envia o certificado
+      # intermediário na negociação TLS -- só o certificado-folha. O macOS
+      # tolera isso porque busca o intermediário sozinho pelo campo AIA do
+      # certificado do servidor; o curl no Linux (runner do Actions) não faz
+      # essa busca, e todo download do ETL falha com "unable to get local
+      # issuer certificate". É por isso que o pipeline sempre funcionou
+      # localmente e nunca no CI. NÃO REMOVA este passo achando que é
+      # supérfluo -- sem ele, `etl/run.R` falha na primeira consulta de
+      # metadados remotos, antes mesmo de baixar qualquer CSV.
+      #
+      # Em vez de fixar a URL do intermediário, extrai a URL do próprio
+      # campo AIA do certificado apresentado pelo servidor: sobrevive a uma
+      # troca de certificado pelo SERPRO sem exigir editar este workflow.
+      # Se a extração ou o download falharem por qualquer motivo, cai para
+      # a URL fixa do intermediário observado nesta correção (Sectigo
+      # Public Server Authentication CA OV R36) como último recurso.
+      #
+      # NÃO desabilita verificação de certificado em lugar nenhum (nada de
+      # -k/--insecure/ssl_verifypeer=FALSE): o pipeline baixa dados públicos
+      # de uma fonte oficial, e desligar a verificação abriria caminho para
+      # um intermediário malicioso servir dados falsos -- a validação de
+      # conteúdo do ETL não detectaria um CSV bem formado com números
+      # errados. Por isso o passo falha explicitamente (exit 1) se, depois
+      # de instalar o intermediário, a cadeia ainda não validar.
+      - name: Instalar certificado intermediário do servidor do MDIC
+        run: |
+          set +e   # Controlamos os erros manualmente abaixo -- o default do
+                   # Actions (bash -e -o pipefail) tornaria a extração
+                   # OPCIONAL do AIA (que pode legitimamente não achar nada)
+                   # uma falha fatal do passo, o que não é o que queremos:
+                   # nesse caso, a intenção é cair para a URL fixa.
+
+          HOST="balanca.economia.gov.br"
+          FALLBACK_URL="http://crt.sectigo.com/SectigoPublicServerAuthenticationCAOVR36.crt"
+
+          AIA_URL="$(echo | openssl s_client -connect "$HOST:443" -servername "$HOST" 2>/dev/null \
+            | openssl x509 -noout -text 2>/dev/null \
+            | grep "CA Issuers" \
+            | grep -oE 'http[^[:space:]]+' \
+            | head -1)"
+
+          if [ -n "$AIA_URL" ]; then
+            echo "Intermediário anunciado pelo AIA do certificado do servidor: $AIA_URL"
+            ORIGEM="$AIA_URL"
+          else
+            echo "Não foi possível extrair a URL do AIA; usando a URL fixa conhecida."
+            ORIGEM="$FALLBACK_URL"
+          fi
+
+          baixar_e_validar() {
+            curl -fsSL --retry 3 "$1" -o /tmp/intermediario.crt || return 1
+            # O AIA normalmente serve o certificado em DER; se a conversão
+            # falhar, assume que já veio em PEM.
+            openssl x509 -inform DER -in /tmp/intermediario.crt -out /tmp/intermediario.pem 2>/dev/null \
+              || cp /tmp/intermediario.crt /tmp/intermediario.pem
+            # Confirma que é mesmo um certificado antes de instalar no
+            # armazém de CAs do sistema.
+            openssl x509 -noout -in /tmp/intermediario.pem 2>/dev/null
+          }
+
+          if ! baixar_e_validar "$ORIGEM"; then
+            echo "Download/validação de '$ORIGEM' falhou; tentando a URL fixa como último recurso."
+            if [ "$ORIGEM" = "$FALLBACK_URL" ] || ! baixar_e_validar "$FALLBACK_URL"; then
+              echo "ERRO: não foi possível obter um certificado intermediário válido." >&2
+              exit 1
+            fi
+          fi
+
+          sudo cp /tmp/intermediario.pem /usr/local/share/ca-certificates/mdic-intermediario.crt || exit 1
+          sudo update-ca-certificates || exit 1
+
+          VERIFY="$(echo | openssl s_client -connect "$HOST:443" -servername "$HOST" 2>/dev/null | grep "Verify return code")"
+          echo "$VERIFY"
+          case "$VERIFY" in
+            *"Verify return code: 0"*) echo "Cadeia de certificados validada." ;;
+            *)
+              echo "ERRO: a cadeia de certificados do MDIC ainda não valida depois de instalar o intermediário." >&2
+              exit 1
+              ;;
+          esac
+
       - name: Executar o ETL
         run: |
           if [ "${{ inputs.forcar }}" = "true" ]; then
