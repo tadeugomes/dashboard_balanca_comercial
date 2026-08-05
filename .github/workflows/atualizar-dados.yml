@@ -75,23 +75,14 @@ jobs:
             echo "houve=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # Comita o rastro auditável do pipeline. [skip ci] evita que este
-      # próprio commit dispare o workflow de novo.
-      - name: Registrar o estado no repositório
-        if: steps.mudou.outputs.houve == 'true'
-        run: |
-          git config user.name  'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add etl/estado.json
-          git commit -m "chore: atualiza dados do Comex Stat [skip ci]"
-          git push
-
       # Os parquets não são versionados; a Release é o canal de distribuição
       # deles. Se a Release da tag do mês já existir (reexecução manual no
-      # mesmo mês), gh release create falha — nesse caso, envia os arquivos
-      # para a Release já existente com --clobber.
+      # mesmo mês, ou retentativa após uma falha nesta mesma corrida — ver
+      # nota abaixo sobre a ordem dos passos), gh release create falha —
+      # nesse caso, envia os arquivos para a Release já existente com
+      # --clobber.
       - name: Publicar os parquets como asset de Release
-        if: steps.mudou.outputs.houve == 'true'
+        if: success() && steps.mudou.outputs.houve == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -108,7 +99,7 @@ jobs:
       # O pipeline grava os parquets diretamente em dados/, então basta não
       # apagá-los antes do deploy — dashboard.qmd os lê de lá.
       - name: Publicar no shinyapps.io
-        if: steps.mudou.outputs.houve == 'true'
+        if: success() && steps.mudou.outputs.houve == 'true'
         env:
           SHINYAPPS_TOKEN:  ${{ secrets.SHINYAPPS_TOKEN }}
           SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
@@ -128,6 +119,22 @@ jobs:
             )
           '
 
+      # ÚLTIMO passo do caminho feliz — de propósito. Se Release ou deploy
+      # falharem, este passo não pode rodar: registrar "já processado" antes
+      # de terminar de publicar faria precisa_atualizar() concluir "nada
+      # mudou" na próxima execução, e o deploy pendente nunca seria
+      # retentado sozinho. `success()` explícito (redundante com o default
+      # do Actions, mas deixado à vista): uma falha em qualquer passo
+      # anterior pula este commit.
+      - name: Registrar o estado no repositório
+        if: success() && steps.mudou.outputs.houve == 'true'
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add etl/estado.json
+          git commit -m "chore: atualiza dados do Comex Stat [skip ci]"
+          git push
+
       - name: Abrir issue em caso de falha
         if: failure()
         env:
@@ -139,5 +146,28 @@ jobs:
 
           Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-          O dashboard em produção segue com os dados válidos do mês anterior." \
+          O commit de etl/estado.json só acontece depois da Release e do
+          deploy no shinyapps.io (nessa ordem, de propósito): se a falha foi
+          ANTES da publicação, o estado não avançou e o dashboard em
+          produção segue com os dados válidos do mês anterior — a próxima
+          execução agendada tenta de novo sozinha, sem ação manual.
+
+          Se a falha foi DEPOIS de Release/deploy terem rodado (por exemplo,
+          o deploy no shinyapps.io falhou sozinho), o estado.json também não
+          foi commitado, então a próxima execução agendada já vai
+          reprocessar e tentar publicar de novo por conta própria — mas até
+          o dia 10 do mês que vem isso não vai acontecer. Para não esperar,
+          dispare manualmente agora:
+
+            gh workflow run atualizar-dados.yml -R ${{ github.repository }}
+
+          Isso reprocessa só o que ainda não foi confirmado (mesmo
+          comportamento da execução agendada). Use -f forcar=true só se
+          quiser ignorar o cache e reprocessar todos os anos do zero:
+
+            gh workflow run atualizar-dados.yml -R ${{ github.repository }} -f forcar=true
+
+          Confira o log acima antes de disparar de novo, para não repetir
+          uma falha de causa raiz não corrigida (ex.: token do shinyapps.io
+          inválido)." \
             --label "automação"
