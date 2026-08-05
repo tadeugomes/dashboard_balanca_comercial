@@ -158,7 +158,9 @@ As versões local e remota do `dashboard.qmd` divergem em como leem os parquets:
 
 O shinyapps.io no plano gratuito limita **1 GB de RAM por instância**. Com os dados até 2026 cada parquet chega a cerca de 4,6 milhões de linhas. A versão remota carrega tudo em memória e cacheia por UF, o que pode estourar esse teto e derrubar o app; a local não carrega, mas responde mais devagar a cada interação.
 
-A escolha será feita na Fase 3 por medição de memória e tempo de resposta com os dados atualizados, não por argumento. O resultado será registrado neste documento.
+A escolha foi feita por medição de memória e tempo de resposta com os dados atualizados (`scripts/medir_leitura.R`), não por argumento.
+
+**Resultado (medido em 2026-08-05, ~4,5 milhões de linhas por parquet, exportação + importação, 3 UFs cada, processos `Rscript` isolados):** leitura preguiçosa — 0,47 s, pico 553,6 MB de RSS (144,2 MB de heap do R via `gc()`); collect() ansioso com memoise — 10,76 s, pico 1390,4 MB de RSS (368,2 MB de heap do R via `gc()`), com picos isolados por arquivo entre 1353,8 e 1476,4 MB. Decisão: **manter a leitura preguiçosa** (Arrow sem `collect()`), porque o pico do collect() ansioso ultrapassa não só os 700 MB do critério de corte como o próprio teto de 1 GB do shinyapps.io — o diagnóstico mostra que o pool de memória nativo do Arrow (`mimalloc`) retém memória do processo (RSS) muito além do objeto R resultante mesmo depois de `rm()` + `gc()`, então o risco de estouro persiste pelo resto da sessão, não é só um pico passageiro. Como o critério de corte de 700 MB já reprova a variante ansiosa, o `memoise` do branch `paralelizacao` não é portado.
 
 ## Faseamento
 
