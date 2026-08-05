@@ -168,6 +168,14 @@ jobs:
           git commit -m "chore: atualiza dados do Comex Stat [skip ci]"
           git push
 
+      # Sem --label: `gh issue create --label "automação"` falhava porque
+      # essa label não existe no repositório (nada a "corrigir" na
+      # automação, é um recurso do repositório). Criar a label antes (`gh
+      # label create ... || true`) resolveria, mas adicionaria mais uma
+      # chamada de API e mais uma coisa para manter em sincronia com o
+      # repositório; como rotular a issue não é essencial para o alerta
+      # cumprir sua função, a alternativa mais simples é não depender de
+      # label nenhuma.
       - name: Abrir issue em caso de falha
         if: failure()
         env:
@@ -202,5 +210,4 @@ jobs:
 
           Confira o log acima antes de disparar de novo, para não repetir
           uma falha de causa raiz não corrigida (ex.: token do shinyapps.io
-          inválido)." \
-            --label "automação"
+          inválido)."
