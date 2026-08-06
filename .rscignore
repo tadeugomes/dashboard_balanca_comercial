@@ -32,3 +32,15 @@ teste.qmd
 teste.html
 teste_files/
 rascunho.R
+
+# Artefatos de renderização local do Quarto. Para um documento Shiny
+# (server: shiny), o shinyapps.io renderiza o .qmd no próprio servidor — mandar
+# um HTML pré-renderizado faz o servidor usá-lo como interface em vez de
+# regerar, e ele congela títulos e IDs de output no estado em que estava.
+#
+# Foi exatamente o que aconteceu em 06/08/2026: o dashboard.html versionado era
+# anterior à dinamização do ano, então a interface publicada pedia os outputs
+# antigos (balanca_2014_2024) enquanto o servidor oferecia os novos
+# (balanca_anual). Os painéis ficavam vazios e os títulos diziam 2024.
+dashboard.html
+dashboard_files/
