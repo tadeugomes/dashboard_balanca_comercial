@@ -196,18 +196,23 @@ ncm_importacao_reativo <- reactive(ncm_data_loader("importacao", input$SelecaoUF
 
 criar_acumulado <- function(ncm_exportacao_reativo, ncm_importacao_reativo, variavelY) {
   # Função auxiliar para agrupar e resumir dados
+  # Correção do OOM: o group_by/summarise roda no Arrow (sem collect() antes),
+  # só o resultado agregado é materializado. O ramo do `if` precisa ser
+  # escolhido em R ANTES de montar a consulta Arrow, porque `if`/`else` dentro
+  # de summarise() não é suportado pelo backend Arrow.
   processar_dados <- function(dados, uf) {
-    dados |>
-      collect() |> 
-      group_by(ano, mes, nome_mes, uf = uf) |>
-      summarise(
-        valor = if (variavelY == "Valor (em milhões de dólares)") {
-          sum(valor_fob_dolar, na.rm = TRUE)
-        } else {
-          sum(peso_liquido_kg, na.rm = TRUE)
-        },
-        .groups = "drop"
-      )
+    agregado <- if (variavelY == "Valor (em milhões de dólares)") {
+      dados |>
+        group_by(ano, mes, nome_mes) |>
+        summarise(valor = sum(valor_fob_dolar, na.rm = TRUE), .groups = "drop")
+    } else {
+      dados |>
+        group_by(ano, mes, nome_mes) |>
+        summarise(valor = sum(peso_liquido_kg, na.rm = TRUE), .groups = "drop")
+    }
+    agregado |>
+      collect() |>
+      mutate(uf = uf)
   }
   
   # Processar exportações e importações
@@ -258,24 +263,29 @@ extrair_texto_entre_parenteses <- function(texto) {
 
 funcao_ncm_agrupado  <- function(dados, coluna_agrupamento, tipo) {
   # Função interna para processar um nível geográfico
+  # Correção do OOM: filtro, group_by e summarise rodam no Arrow; só o
+  # resultado agregado é coletado. A coluna `uf` (constante por chamada) é
+  # criada com mutate() depois do collect(), porque o Arrow não aceita
+  # coluna constante criada dentro de group_by().
   processar_nivel <- function(dados, uf_valor, coluna_agrupamento) {
     dados |>
-      collect() |> 
       filter(no_uf == uf_valor | no_regiao == uf_valor | uf_valor == "Brasil") |>
-      group_by(ano, mes, nome_mes, uf = uf_valor, {{coluna_agrupamento}}) |>
+      group_by(ano, mes, nome_mes, {{coluna_agrupamento}}) |>
       summarise(
         valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
         peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
         .groups = "drop"
-      ) |> 
+      ) |>
+      collect() |>
+      mutate(uf = uf_valor) |>
       arrange(mes)
   }
-  
-  # Filtrar dados para Maranhão, Nordeste e Brasil
+
+  # Filtrar dados para Maranhão, Nordeste e Brasil (fica no Arrow: só reduz
+  # linhas, não materializa nada em memória)
   dados_filtrado <- dados |>
-    collect() |> 
     filter(no_uf %in% c("Maranhão", "Brasil") | no_regiao == "Nordeste")
-  
+
   # Processar e combinar resultados
   bind_rows(
     processar_nivel(dados_filtrado, "Maranhão", {{coluna_agrupamento}}),
@@ -358,7 +368,7 @@ output$tabelaBrasil_Maranhao <- DT::renderDT({
 output$balanca_2anos <- highcharter::renderHighchart({
 acumulado1 <- 
 acumulado_reativo() |> 
-  dplyr::filter(ano == c(max(ano), max(ano) - 1)) |> 
+  dplyr::filter(ano %in% c(max(ano), max(ano) - 1)) |>
   tidyr::pivot_longer(
     !c(ano, mes, nome_mes, uf),
     values_to = "valor",
@@ -597,44 +607,47 @@ output$tabela_exp_produtos <- DT::renderDT({
  ############# DADOS ################ 
 ncm_exportacao_agrupado <- dplyr::bind_rows(
     #Maranhão
+    # Correção do OOM: filtro e agregação rodam no Arrow; o collect() vem
+    # só depois, sobre o resultado já agregado. `uf` vira mutate() pós-collect
+    # porque o Arrow não aceita coluna constante criada dentro de group_by().
     ncm_exportacao_reativo() |>
-      collect() |> 
-      # ncm_exportacao |>
       dplyr::filter(
-        no_uf == "Maranhão" 
+        no_uf == "Maranhão"
       ) |>
-      dplyr::group_by(ano, mes, nome_mes, uf = no_uf,  no_cuci_grupo) |>
+      dplyr::group_by(ano, mes, nome_mes, no_cuci_grupo) |>
       dplyr::summarise(
           valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
           peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
         .groups = "drop"
-      ),
+      ) |>
+      collect() |>
+      dplyr::mutate(uf = "Maranhão"),
 
     #Nordeste
     ncm_exportacao_reativo() |>
-      collect() |> 
-      # ncm_exportacao |>
       dplyr::filter(
           no_regiao == "Nordeste"
       ) |>
-      dplyr::group_by(ano, mes, nome_mes, uf = "Nordeste", no_cuci_grupo) |> # <--- uf = "Nordeste"
+      dplyr::group_by(ano, mes, nome_mes, no_cuci_grupo) |>
       dplyr::summarise(
          valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
          peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
         .groups = "drop"
-      ),
+      ) |>
+      collect() |>
+      dplyr::mutate(uf = "Nordeste"), # <--- uf = "Nordeste"
 
     # Brasil
     ncm_exportacao_reativo() |>
-      collect() |> 
-      # ncm_exportacao |>
-      dplyr::group_by(ano, mes, nome_mes,uf = "Brasil",  no_cuci_grupo) |> # <--- uf = "Brasil"
+      dplyr::group_by(ano, mes, nome_mes, no_cuci_grupo) |>
       dplyr::summarise(
          valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
          peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
         .groups = "drop"
-      )
-  ) |> 
+      ) |>
+      collect() |>
+      dplyr::mutate(uf = "Brasil") # <--- uf = "Brasil"
+  ) |>
   arrange(mes)
 
 lbls <- 
@@ -901,42 +914,49 @@ output$tabela_imp_produtos <- DT::renderDT({
   
  ############# DADOS ################ 
 ncm_importacao_agrupado <- 
- ncm_importacao_agrupado <- dplyr::bind_rows( 
+ ncm_importacao_agrupado <- dplyr::bind_rows(
         #Maranhão
+        # Correção do OOM: filtro e agregação rodam no Arrow; o collect() vem
+        # só depois, sobre o resultado já agregado. `uf` vira mutate()
+        # pós-collect porque o Arrow não aceita coluna constante criada
+        # dentro de group_by().
         ncm_importacao_reativo() |>
-          collect() |> 
             dplyr::filter(
-                no_uf == "Maranhão" 
+                no_uf == "Maranhão"
             ) |>
-            dplyr::group_by(ano, mes, nome_mes, uf = no_uf,  no_cuci_grupo) |>
+            dplyr::group_by(ano, mes, nome_mes, no_cuci_grupo) |>
             dplyr::summarise(
                 valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
                 peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
                 .groups = "drop"
-            ),
+            ) |>
+            collect() |>
+            dplyr::mutate(uf = "Maranhão"),
 
         #Nordeste
         ncm_importacao_reativo() |>
-          collect() |> 
             dplyr::filter(
                 no_regiao == "Nordeste"
             ) |>
-            dplyr::group_by(ano, mes, nome_mes, uf = "Nordeste", no_cuci_grupo) |>
+            dplyr::group_by(ano, mes, nome_mes, no_cuci_grupo) |>
             dplyr::summarise(
                 valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
                 peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
                 .groups = "drop"
-            ),
+            ) |>
+            collect() |>
+            dplyr::mutate(uf = "Nordeste"),
 
         # Brasil
         ncm_importacao_reativo() |>
-          collect() |> 
-            dplyr::group_by(ano, mes, nome_mes,uf = "Brasil",  no_cuci_grupo) |>
+            dplyr::group_by(ano, mes, nome_mes, no_cuci_grupo) |>
             dplyr::summarise(
                 valor_fob_dolar = sum(valor_fob_dolar, na.rm = TRUE),
                 peso_liquido_kg = sum(peso_liquido_kg, na.rm = TRUE),
                 .groups = "drop"
-            )
+            ) |>
+            collect() |>
+            dplyr::mutate(uf = "Brasil")
     )
 
 lbls <- 
