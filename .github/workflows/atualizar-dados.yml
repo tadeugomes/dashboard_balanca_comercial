@@ -221,6 +221,29 @@ jobs:
       # nota abaixo sobre a ordem dos passos), gh release create falha —
       # nesse caso, envia os arquivos para a Release já existente com
       # --clobber.
+      # O shinyapps.io NÃO renderiza documentos Quarto Shiny no servidor
+      # ("Content pre-render disabled for Shiny Quarto content"): ele exige o
+      # HTML pré-renderizado no bundle e aborta com "Prerendered HTML file not
+      # found" se ele faltar.
+      #
+      # Renderizar AQUI, depois do ETL e antes de publicar, é o que garante que
+      # o HTML enviado corresponda ao dashboard.qmd atual E aos dados recém
+      # gerados. Um HTML defasado no repositório congelaria títulos e IDs de
+      # output no estado antigo -- foi o que quebrou a publicação de 06/08/2026,
+      # com os painéis vazios porque a interface pedia balanca_2014_2024
+      # enquanto o servidor oferecia balanca_anual.
+      - name: Renderizar o dashboard
+        if: success() && steps.mudou.outputs.houve == 'true'
+        run: |
+          quarto render dashboard.qmd
+          echo "--- conferindo que o HTML reflete o código atual ---"
+          if grep -q "balanca_2014_2024\|tabela_Exp_Prod2024" dashboard.html; then
+            echo "ERRO: o HTML gerado ainda contém identificadores antigos."
+            exit 1
+          fi
+          grep -o "balanca_anual" dashboard.html | head -1
+          echo "HTML renderizado a partir do dashboard.qmd atual."
+
       - name: Publicar os parquets como asset de Release
         if: success() && steps.mudou.outputs.houve == 'true'
         env:

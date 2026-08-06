@@ -33,14 +33,13 @@ teste.html
 teste_files/
 rascunho.R
 
-# Artefatos de renderização local do Quarto. Para um documento Shiny
-# (server: shiny), o shinyapps.io renderiza o .qmd no próprio servidor — mandar
-# um HTML pré-renderizado faz o servidor usá-lo como interface em vez de
-# regerar, e ele congela títulos e IDs de output no estado em que estava.
+# NÃO exclua dashboard.html nem dashboard_files/ daqui.
 #
-# Foi exatamente o que aconteceu em 06/08/2026: o dashboard.html versionado era
-# anterior à dinamização do ano, então a interface publicada pedia os outputs
-# antigos (balanca_2014_2024) enquanto o servidor oferecia os novos
-# (balanca_anual). Os painéis ficavam vazios e os títulos diziam 2024.
-dashboard.html
-dashboard_files/
+# O shinyapps.io NÃO renderiza documentos Quarto Shiny no servidor: o log do
+# app diz "Content pre-render disabled for Shiny Quarto content" e ele aborta
+# com "Prerendered HTML file not found" se o HTML não vier no bundle.
+#
+# Tentamos excluí-los em 06/08/2026 e o app parou de subir. O HTML É
+# necessário -- o que não pode acontecer é ele estar desatualizado em relação
+# ao dashboard.qmd. Por isso o workflow renderiza o .qmd logo antes de
+# publicar, garantindo que o HTML do bundle corresponda ao código atual.
