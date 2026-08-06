@@ -212,7 +212,13 @@ criar_acumulado <- function(ncm_exportacao_reativo, ncm_importacao_reativo, vari
     }
     agregado |>
       collect() |>
-      mutate(uf = uf)
+      mutate(uf = uf) |>
+      # O Arrow não garante a ordem das linhas que devolve de um group_by, e
+      # antes da correção do OOM a ordem vinha "de graça" porque o collect()
+      # acontecia antes da agregação. Sem este arrange a tabela da aba Resumo
+      # sai com os meses embaralhados e o gráfico mensal vira um emaranhado de
+      # linhas cruzadas — foi o que aconteceu em produção em 06/08/2026.
+      arrange(ano, mes)
   }
   
   # Processar exportações e importações
@@ -278,7 +284,7 @@ funcao_ncm_agrupado  <- function(dados, coluna_agrupamento, tipo) {
       ) |>
       collect() |>
       mutate(uf = uf_valor) |>
-      arrange(mes)
+      arrange(ano, mes)
   }
 
   # Filtrar dados para Maranhão, Nordeste e Brasil (fica no Arrow: só reduz
@@ -648,7 +654,7 @@ ncm_exportacao_agrupado <- dplyr::bind_rows(
       collect() |>
       dplyr::mutate(uf = "Brasil") # <--- uf = "Brasil"
   ) |>
-  arrange(mes)
+  arrange(ano, mes)
 
 lbls <- 
   ncm_exportacao_agrupado |> 
