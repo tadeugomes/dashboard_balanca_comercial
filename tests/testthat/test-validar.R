@@ -1,4 +1,8 @@
 source(file.path("..", "..", "etl", "R", "validar.R"))
+# consolidar_e_validar() (em validar.R) chama consolidar_fluxo() internamente
+# -- precisa estar carregada para os testes de I2/I6 abaixo, do mesmo jeito
+# que run.R garante isso sourceando etl/R/*.R inteiro antes de usá-la.
+source(file.path("..", "..", "etl", "R", "consolidar.R"))
 
 gravar_parquet <- function(df, caminho) {
   con <- DBI::dbConnect(duckdb::duckdb())
@@ -203,4 +207,126 @@ test_that("faixa_valor = NULL desativa a verificação de grandeza", {
   r <- validar_fixture(p, faixa_valor = NULL, faixa_peso = c(50, 2000))
 
   expect_true(r$ok)
+})
+
+# --- I1: verificação de join mede string vazia, não NULL --------------------
+# O SQL de agregação faz COALESCE(..., '') em no_uf/no_cuci_grupo (e um CASE
+# com ELSE não-nulo em no_regiao) -- NULL é impossível nessas colunas, então
+# uma verificação "IS NULL" nunca dispara, mesmo com o LEFT JOIN 100%
+# quebrado. A verificação corrigida mede a PROPORÇÃO de string vazia contra
+# um limiar explícito (limiar_vazio).
+
+test_that("proporção de string vazia acima do limiar de join reprova", {
+  df <- base_valida()
+  # 2 das 24 linhas com no_cuci_grupo vazio -> 8,33%, acima de um limiar de 5%.
+  df$no_cuci_grupo[1:2] <- ""
+  p <- gravar_parquet(df, tempfile(fileext = ".parquet"))
+  r <- validar_fixture(p, limiar_vazio = 0.05)
+
+  expect_false(r$ok)
+  problema <- r$problemas[grepl("no_cuci_grupo", r$problemas)]
+  expect_length(problema, 1)
+  expect_true(grepl("join", problema, ignore.case = TRUE))
+  expect_true(grepl("2 de 24", problema))
+})
+
+test_that("proporção de string vazia dentro do limiar de join passa", {
+  df <- base_valida()
+  # 1 das 24 linhas vazia -> 4,17%, abaixo de um limiar de 5%.
+  df$no_cuci_grupo[1] <- ""
+  p <- gravar_parquet(df, tempfile(fileext = ".parquet"))
+  r <- validar_fixture(p, limiar_vazio = 0.05)
+
+  expect_true(r$ok)
+})
+
+# --- I2: consolidar_e_validar() nunca sobrescreve um destino bom com um ----
+# --- consolidado reprovado ---------------------------------------------------
+# Antes, consolidar_fluxo() gravava direto no parquet de destino e
+# validar_parquet() só decidia DEPOIS se prestava -- uma execução reprovada
+# já tinha destruído o parquet bom anterior. consolidar_e_validar() escreve
+# num temporário no mesmo diretório do destino e só promove (file.rename)
+# se a validação passar.
+
+test_that("consolidar_e_validar não sobrescreve o parquet de destino quando a validação reprova", {
+  dir <- tempfile("consolidar_e_validar_falha"); dir.create(dir)
+  destino <- file.path(dir, "final.parquet")
+
+  # "Parquet bom" já publicado -- é o que consolidar_e_validar() não pode
+  # destruir numa reprovação. valor_fob_dolar = 999 (em vez dos 100 do
+  # fixture-padrão) de propósito: se o destino for indevidamente sobrescrito
+  # pelo consolidado abaixo, a soma muda de forma detectável -- sem essa
+  # diferença, os dois fixtures teriam totais coincidentemente iguais e a
+  # asserção passaria mesmo com a proteção quebrada.
+  bom <- base_valida()
+  bom$valor_fob_dolar <- 999
+  gravar_parquet(bom, destino)
+
+  # Fonte que reprova de propósito: sem passar ano_inicial (default é 2014,
+  # ANO_INICIAL), a lacuna 2014-2023 garante reprovação sem depender de mais
+  # nenhum detalhe da fixture.
+  anual <- gravar_parquet(base_valida(), file.path(dir, "anos.parquet"))
+
+  r <- consolidar_e_validar(c(anual), destino)
+
+  expect_false(r$ok)
+  expect_true(file.exists(destino))
+
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  total <- DBI::dbGetQuery(con, sprintf(
+    "SELECT SUM(valor_fob_dolar) AS total FROM read_parquet('%s')", destino))$total
+  expect_equal(total, sum(bom$valor_fob_dolar))
+
+  # Nenhum temporário deve sobrar no diretório de destino.
+  restantes <- list.files(dir, pattern = "^\\.consolidar_tmp_")
+  expect_length(restantes, 0)
+})
+
+test_that("consolidar_e_validar promove o consolidado para o destino quando a validação passa", {
+  dir <- tempfile("consolidar_e_validar_ok"); dir.create(dir)
+  destino <- file.path(dir, "final.parquet")
+  anual <- gravar_parquet(base_valida(), file.path(dir, "anos.parquet"))
+
+  # faixa_valor/faixa_peso = NULL: mesmo motivo de validar_fixture() acima --
+  # os totais do fixture (dezenas/centenas de dólares) ficam bem abaixo de
+  # qualquer faixa plausível real, e não é isso que este teste verifica.
+  r <- consolidar_e_validar(c(anual), destino, ano_inicial = 2024L,
+                            faixa_valor = NULL, faixa_peso = NULL)
+
+  expect_true(r$ok)
+  expect_true(file.exists(destino))
+  restantes <- list.files(dir, pattern = "^\\.consolidar_tmp_")
+  expect_length(restantes, 0)
+})
+
+# --- I6: tolerância de regressão customizável --------------------------------
+# etl/run.R lê ETL_TOLERANCIA_REGRESSAO (default 0,01) e repassa como
+# `tolerancia` para consolidar_e_validar()/validar_parquet(). Isto prova que
+# o parâmetro é de fato respeitado: uma variação que reprova com a
+# tolerância default passa quando uma tolerância maior é informada.
+
+test_that("tolerância customizada em consolidar_e_validar é respeitada", {
+  dir <- tempfile("consolidar_e_validar_tol"); dir.create(dir)
+  destino <- file.path(dir, "final.parquet")
+  anual <- gravar_parquet(base_valida(), file.path(dir, "anos.parquet"))
+
+  # Total real de 2024 no fixture é 1200 (ver "parquet íntegro passa" acima).
+  # totais_anteriores$"2024" = 1140 -> variação de +5,26%: reprova com a
+  # tolerância default (1%) e passa com uma tolerância maior (10%).
+  totais_ref <- list("2024" = 1140)
+
+  r_default <- consolidar_e_validar(c(anual), destino, ano_inicial = 2024L,
+                                    totais_anteriores = totais_ref,
+                                    faixa_valor = NULL, faixa_peso = NULL)
+  expect_false(r_default$ok)
+  expect_true(any(grepl("regress", r_default$problemas, ignore.case = TRUE)))
+  expect_false(file.exists(destino))
+
+  r_tolerante <- consolidar_e_validar(c(anual), destino, ano_inicial = 2024L,
+                                      totais_anteriores = totais_ref,
+                                      tolerancia = 0.10,
+                                      faixa_valor = NULL, faixa_peso = NULL)
+  expect_true(r_tolerante$ok)
+  expect_true(file.exists(destino))
 })

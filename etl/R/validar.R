@@ -18,10 +18,19 @@ ANO_INICIAL <- 2014L
 
 # ano_inicial é parâmetro para que os testes possam usar fixtures curtos sem
 # que a verificação de lacuna acuse todos os anos ausentes desde 2014.
+#
+# limiar_vazio (verificação de join, ver seção abaixo): medição nos parquets
+# de produção em 2026-08 encontrou 0 linhas vazias em 8.932.660 (4.537.239 de
+# exportação + 4.395.421 de importação) nas três colunas monitoradas. Com
+# essa base zero, 0,5% já é um limiar folgado -- e um join realmente quebrado
+# (ex.: mudança de formato em CO_CUCI_ITEM que para de casar com a tabela
+# auxiliar) produz perto de 100% de linhas vazias na coluna afetada, não uma
+# fração marginal perto do limiar.
 validar_parquet <- function(caminho, totais_anteriores = NULL,
                             tolerancia = 0.01, ano_inicial = ANO_INICIAL,
                             faixa_valor = c(50e3, 800e3),
-                            faixa_peso  = c(50, 2000)) {
+                            faixa_peso  = c(50, 2000),
+                            limiar_vazio = 0.005) {
   if (!file.exists(caminho)) {
     stop("Parquet não encontrado: ", caminho)
   }
@@ -107,10 +116,7 @@ validar_parquet <- function(caminho, totais_anteriores = NULL,
        COUNT(*) FILTER (WHERE valor_fob_dolar IS NULL
                            OR peso_liquido_kg IS NULL) AS nulos,
        COUNT(*) FILTER (WHERE valor_fob_dolar < 0
-                           OR peso_liquido_kg < 0)     AS negativos,
-       COUNT(*) FILTER (WHERE no_pais IS NULL OR no_uf IS NULL
-                           OR no_regiao IS NULL
-                           OR no_cuci_grupo IS NULL)   AS chaves_nulas
+                           OR peso_liquido_kg < 0)     AS negativos
      FROM %s", fonte))
 
   if (ruins$nulos > 0) {
@@ -120,9 +126,34 @@ validar_parquet <- function(caminho, totais_anteriores = NULL,
     problemas <- c(problemas, paste0(ruins$negativos,
                                      " linhas com medida negativa"))
   }
-  if (ruins$chaves_nulas > 0) {
-    problemas <- c(problemas, paste0(ruins$chaves_nulas,
-                                     " linhas com chave nula (join falhou)"))
+
+  # --- join (chaves de texto vazias) -----------------------------------------
+  # A spec original pedia checar no_uf/no_regiao/no_cuci_grupo NULOS. Mas o
+  # SQL de agregação (etl/sql/agregado_ncm.sql) faz COALESCE(..., '') nessas
+  # colunas -- de propósito, para o dashboard nunca mostrar "NA" na legenda.
+  # Consequência colateral: NULL é impossível nelas, então a verificação
+  # antiga (WHERE ... IS NULL) nunca disparava, mesmo com o LEFT JOIN
+  # 100% quebrado. Por isso medimos STRING VAZIA, não NULL.
+  total_linhas <- DBI::dbGetQuery(con, sprintf(
+    "SELECT COUNT(*) AS n FROM %s", fonte))$n
+
+  if (total_linhas > 0) {
+    vazios <- DBI::dbGetQuery(con, sprintf(
+      "SELECT
+         COUNT(*) FILTER (WHERE no_uf = '')        AS no_uf,
+         COUNT(*) FILTER (WHERE no_regiao = '')     AS no_regiao,
+         COUNT(*) FILTER (WHERE no_cuci_grupo = '') AS no_cuci_grupo
+       FROM %s", fonte))
+
+    for (coluna in c("no_uf", "no_regiao", "no_cuci_grupo")) {
+      n_vazios <- vazios[[coluna]]
+      proporcao <- n_vazios / total_linhas
+      if (proporcao > limiar_vazio) {
+        problemas <- c(problemas, sprintf(
+          "coluna %s: %d de %d linhas vazias (%.2f%%), acima do limiar de %.2f%% -- possível join quebrado",
+          coluna, n_vazios, total_linhas, 100 * proporcao, 100 * limiar_vazio))
+      }
+    }
   }
 
   # --- codificação ----------------------------------------------------------
@@ -165,4 +196,59 @@ validar_parquet <- function(caminho, totais_anteriores = NULL,
     problemas = problemas,
     totais_por_ano = totais
   )
+}
+
+# Consolida um fluxo (lista de parquets anuais) e só publica o resultado em
+# `destino` se ele passar por validar_parquet(). Escreve o consolidado num
+# arquivo TEMPORÁRIO -- nunca direto em `destino` -- para que uma validação
+# reprovada não destrua um parquet bom já publicado ali antes: sem essa
+# guarda, `consolidar_fluxo()` gravava direto no destino e a decisão de
+# aceitar ou não vinha só depois, tarde demais. No CI isso é inofensivo (o
+# checkout é efêmero), mas numa execução local -- justamente a que o
+# operador usa para investigar quando o workflow reprova -- é destrutivo.
+#
+# O temporário é criado com tmpdir = dirname(destino), e não em tempdir():
+# file.rename() só é atômico quando origem e destino compartilham o mesmo
+# sistema de arquivos. Mesmo padrão de gravar_estado(), em etl/R/estado.R.
+#
+# Depende de consolidar_fluxo() (etl/R/consolidar.R) já estar carregada no
+# ambiente -- run.R garante isso sourceando etl/R/*.R inteiro antes de
+# chamar esta função; os testes fazem o mesmo explicitamente.
+consolidar_e_validar <- function(parquets_anuais, destino,
+                                 totais_anteriores = NULL,
+                                 ano_inicial = ANO_INICIAL,
+                                 tolerancia = 0.01,
+                                 limiar_vazio = 0.005,
+                                 faixa_valor = c(50e3, 800e3),
+                                 faixa_peso  = c(50, 2000)) {
+  dir.create(dirname(destino), recursive = TRUE, showWarnings = FALSE)
+  temporario <- tempfile(pattern = ".consolidar_tmp_",
+                        tmpdir = dirname(destino), fileext = ".parquet")
+
+  # Cobre tanto a reprovação esperada (validação com problemas) quanto uma
+  # falha inesperada (ex.: erro do DuckDB durante a consolidação): em ambos
+  # os casos o temporário não deve sobreviver, e `destino` não deve ser
+  # tocado.
+  relatorio <- tryCatch({
+    consolidar_fluxo(parquets_anuais, temporario)
+    validar_parquet(temporario, totais_anteriores = totais_anteriores,
+                    ano_inicial = ano_inicial, tolerancia = tolerancia,
+                    limiar_vazio = limiar_vazio,
+                    faixa_valor = faixa_valor, faixa_peso = faixa_peso)
+  }, error = function(e) {
+    unlink(temporario)
+    stop(e)
+  })
+
+  if (relatorio$ok) {
+    sucesso <- file.rename(temporario, destino)
+    if (!sucesso) {
+      unlink(temporario)
+      stop(sprintf("Falha ao mover '%s' para '%s'.", temporario, destino))
+    }
+  } else {
+    unlink(temporario)
+  }
+
+  relatorio
 }

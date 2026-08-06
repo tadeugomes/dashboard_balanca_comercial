@@ -62,6 +62,26 @@ DIR_SAIDA      <- Sys.getenv("ETL_DIR_SAIDA", "dados")
 ANO_MIN_ENV <- Sys.getenv("ETL_ANO_MIN", "")
 ANO_MAX_ENV <- Sys.getenv("ETL_ANO_MAX", "")
 
+# ETL_TOLERANCIA_REGRESSAO: afrouxa, só nesta execução, a tolerância que a
+# verificação de regressão usa para comparar o total de um ano fechado com o
+# valor já registrado em estado.json (ver validar_parquet(), parâmetro
+# tolerancia). Uso: o MDIC revisa dados retroativamente -- já aconteceu:
+# exportação de 2024 variou -1,27% no peso entre a geração do parquet antigo
+# e uma execução posterior, acima do 1% default, e o portão reprovou
+# corretamente. Quando o operador já confirmou que a variação é uma revisão
+# legítima do MDIC (não um bug no pipeline), ele pode rodar de novo com uma
+# tolerância maior para essa execução específica, sem editar código-fonte
+# nem o estado.json à mão:
+#
+#   ETL_TOLERANCIA_REGRESSAO=0.02 Rscript etl/run.R
+#
+# Sem a variável definida, vale o default de 1% (o mesmo default de
+# validar_parquet). NÃO defina esta variável no workflow do GitHub Actions,
+# pelo mesmo motivo de ETL_ANO_MIN/ETL_ANO_MAX/etc. não aparecerem lá:
+# afrouxar a tolerância em silêncio, todo mês, anularia a proteção que essa
+# verificação existe para dar.
+TOLERANCIA_REGRESSAO <- as.numeric(Sys.getenv("ETL_TOLERANCIA_REGRESSAO", "0.01"))
+
 # Colunas mínimas esperadas no cabeçalho de cada fonte. Servem só para
 # distinguir um CSV real do corpo de erro do Joomla — não são uma validação
 # de schema completa (isso é papel de validar_parquet, no fim do pipeline).
@@ -227,12 +247,26 @@ for (fluxo in c("exportacao", "importacao")) {
   destino <- file.path(DIR_SAIDA, paste0("ncm_", fluxo, "_agrupado.parquet"))
 
   registrar("Consolidando", fluxo, "-", length(anuais), "anos")
-  consolidar_fluxo(anuais, destino)
 
-  relatorio <- validar_parquet(
-    destino,
-    totais_anteriores = estado$totais_por_ano[[fluxo]],
-    ano_inicial = 2014L
+  # consolidar_e_validar() (etl/R/validar.R) consolida num arquivo
+  # temporário e só promove para `destino` se a validação passar -- nunca
+  # grava direto em `destino`. Antes, consolidar_fluxo() gravava direto no
+  # destino final e validar_parquet() só decidia DEPOIS se o resultado
+  # prestava: uma execução reprovada já tinha destruído o parquet bom
+  # anterior. No CI isso é inofensivo (checkout efêmero), mas numa execução
+  # local -- justamente a que o operador usa para investigar quando o
+  # workflow reprova -- é destrutivo.
+  relatorio <- tryCatch(
+    consolidar_e_validar(
+      anuais, destino,
+      totais_anteriores = estado$totais_por_ano[[fluxo]],
+      ano_inicial = 2014L,
+      tolerancia = TOLERANCIA_REGRESSAO
+    ),
+    error = function(e) {
+      registrar("ERRO ao consolidar/validar", fluxo, ":", conditionMessage(e))
+      quit(status = 1)
+    }
   )
 
   if (relatorio$ok) {
