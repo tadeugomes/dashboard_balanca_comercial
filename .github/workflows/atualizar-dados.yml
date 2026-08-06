@@ -259,6 +259,33 @@ jobs:
             )
           '
 
+      # Captura os logs do app recém-publicado. Sem isto, um app que sobe mas
+      # falha ao iniciar só pode ser diagnosticado pelo painel web do
+      # shinyapps.io -- foi o que aconteceu em 06/08/2026, quando o app passou
+      # a devolver "The application failed to start. exit status 1" e o log do
+      # deploy, que termina em sucesso, não dizia nada sobre a causa.
+      # continue-on-error: o diagnóstico não pode derrubar uma publicação boa.
+      - name: Registrar logs do app publicado
+        if: always() && steps.mudou.outputs.houve == 'true'
+        continue-on-error: true
+        env:
+          SHINYAPPS_TOKEN:  ${{ secrets.SHINYAPPS_TOKEN }}
+          SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
+        run: |
+          Rscript -e '
+            rsconnect::setAccountInfo(
+              name   = "observatorioportuario",
+              token  = Sys.getenv("SHINYAPPS_TOKEN"),
+              secret = Sys.getenv("SHINYAPPS_SECRET")
+            )
+            try(rsconnect::showLogs(
+              appPath   = ".",
+              appName   = "balanca_comercial",
+              account   = "observatorioportuario",
+              entries   = 200
+            ))
+          '
+
       # ÚLTIMO passo do caminho feliz — de propósito. Se Release ou deploy
       # falharem, este passo não pode rodar: registrar "já processado" antes
       # de terminar de publicar faria precisa_atualizar() concluir "nada
