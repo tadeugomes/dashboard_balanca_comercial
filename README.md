@@ -16,6 +16,139 @@ Este README cobre o essencial para operar o projeto. O desenho da
 arquitetura e as decisões que levaram a ela estão em
 [`docs/superpowers/specs/2026-08-04-pipeline-mensal-comex-design.md`](docs/superpowers/specs/2026-08-04-pipeline-mensal-comex-design.md).
 
+## Preparar uma máquina nova
+
+Esta seção cobre o passo anterior a tudo o resto do README: colocar o
+projeto para rodar pela primeira vez numa máquina que nunca o viu. Se você
+só quer *usar* o dashboard já publicado, não precisa de nada disto — vá
+direto ao link no topo. Isto é para quem vai rodar o dashboard localmente,
+depurar o ETL, ou preparar um ambiente de publicação alternativo.
+
+### Pré-requisitos
+
+- **git**, para clonar o repositório.
+- **R**, na versão travada em `renv.lock` — ver "O ponto crítico: a versão
+  do R" logo abaixo antes de instalar qualquer coisa.
+- **Quarto**, versão `1.5.57` (a mesma fixada em
+  `.github/workflows/atualizar-dados.yml`) — [quarto.org/docs/get-started](https://quarto.org/docs/get-started/).
+  Necessário para `quarto render dashboard.qmd` e para publicar via
+  `rsconnect::deployDoc()`, que inspeciona o documento chamando o binário
+  `quarto` internamente.
+- **Bibliotecas de sistema** (C/C++) das quais os pacotes R do lockfile
+  dependem — ver "Bibliotecas de sistema" abaixo.
+
+### O ponto crítico: a versão do R
+
+O `renv.lock` trava as versões de todos os pacotes (`arrow`, `dplyr`,
+`shiny` etc.) na combinação calibrada para **R 4.4.1** — a mesma versão do
+workflow do GitHub Actions e do shinyapps.io em produção.
+
+Numa máquina com R mais novo (4.5, 4.6, ...), `renv::restore()` tende a
+**falhar ao compilar** pacotes contra um toolchain que essas versões
+antigas não esperam — testado nesta preparação: `magrittr` quebra dessa
+forma sob R 4.6. Não é um aviso teórico.
+
+As alternativas honestas, em ordem de preferência:
+
+1. **Instalar R 4.4.1** — por exemplo com [`rig`](https://github.com/r-lib/rig)
+   (`rig install 4.4.1 && rig default 4.4.1`). Reproduz o ambiente de
+   produção exatamente.
+2. **Usar o `Dockerfile`** deste repositório (`docker build -t dashboard .`).
+   Fixa R 4.4.1 na imagem — não exige tocar na instalação de R da máquina
+   host.
+3. **Aceitar divergir do lockfile**: instalar as versões atuais dos
+   pacotes (`renv::restore()` ou `install.packages()` avulso) sob o R que
+   já está instalado. Funciona na maioria dos casos para uso local, mas
+   sem garantia — e **nunca rode `renv::snapshot()` nessa condição**. Um
+   snapshot cru gravaria essas versões mais novas no `renv.lock`, e o
+   próximo deploy no shinyapps.io passaria a instalar essas versões em
+   produção sem que ninguém tenha decidido isso deliberadamente — pela
+   porta dos fundos do lockfile, não por uma escolha registrada em lugar
+   nenhum. Detalhe completo do raciocínio em "A restrição do `renv`"
+   abaixo.
+
+### Bibliotecas de sistema
+
+A lista abaixo é a mesma instalada pelo passo "Instalar dependências de
+sistema dos pacotes R" em `.github/workflows/atualizar-dados.yml` —
+validada em execução real de CI, com o mapeamento completo lib → pacote R
+comentado ali. A ausência de **`libglpk-dev`**, em particular, já derrubou
+o CI deste projeto: o pacote `igraph` (dependência transitiva de
+`leaflet`/`golem`) não carrega sem ela (`libglpk.so.40: cannot open shared
+object file`).
+
+**Linux (Debian/Ubuntu)**:
+
+```bash
+sudo apt-get update && sudo apt-get install -y \
+  libglpk-dev \
+  libgdal-dev libproj-dev libgeos-dev libudunits2-dev \
+  libxml2-dev \
+  libssl-dev libcurl4-openssl-dev \
+  libpng-dev \
+  libfontconfig1-dev libharfbuzz-dev libfribidi-dev
+```
+
+**macOS**: normalmente não é preciso instalar nada à parte — os binários
+pré-compilados do CRAN para macOS já embutem essas dependências. Se algum
+pacote insistir em compilar a partir do código-fonte (`install.packages`
+recorrendo a `type = "source"`), instale os equivalentes via Homebrew antes
+de tentar de novo: `brew install gdal proj geos udunits pkg-config`.
+
+**Windows**: a via mais previsível é o `Dockerfile` deste repositório ou
+WSL2 (Ubuntu, seguindo as instruções de Linux acima) — compilar a pilha
+espacial (`terra`/`raster`/`sf`) nativamente no Windows exige Rtools e
+instalação manual de bibliotecas fora do escopo deste README.
+
+### Como obter os dados
+
+Os parquets em `dados/` não estão no repositório (ver "Onde estão os
+dados" abaixo para o porquê). Resumo rápido:
+
+```bash
+gh release download -R tadeugomes/dashboard_balanca_comercial \
+  -D dados --clobber -p "*.parquet"
+```
+
+Alternativa: gerar rodando o pipeline (`Rscript etl/run.R`) — ver "Como
+rodar o pipeline" mais abaixo.
+
+### Como restaurar o ambiente R
+
+Com R na versão certa (ver acima) e a partir da raiz do projeto:
+
+```r
+renv::restore(confirm = FALSE)
+```
+
+### Como verificar que deu certo
+
+```bash
+Rscript scripts/verificar_ambiente.R
+```
+
+Reporta versão do R (e se bate com o lockfile), presença do Quarto,
+pacotes do lockfile ausentes ou divergentes, presença e cobertura de anos
+dos parquets em `dados/`, e as bibliotecas de sistema quando em Linux —
+com instrução de correção para cada item que faltar e um veredito final.
+Depois, confirme com a suíte de testes:
+
+```bash
+Rscript -e 'testthat::test_dir("tests/testthat")'
+```
+
+Esperado: **PASS 119**.
+
+### Secrets (só para quem for publicar)
+
+O deploy automático no shinyapps.io (workflow `atualizar-dados.yml`) usa
+dois secrets: `SHINYAPPS_TOKEN` e `SHINYAPPS_SECRET`. Eles ficam
+configurados no **repositório do GitHub** (Settings → Secrets and
+variables → Actions), nunca numa máquina local nem em nenhum arquivo
+versionado. Uma máquina nova não precisa deles para rodar o dashboard ou
+o ETL localmente — só para quem for reconfigurar o workflow ou publicar
+manualmente via `rsconnect::deployDoc()`.
+
 ## Onde estão os dados
 
 O dashboard lê dois arquivos parquet:
@@ -221,9 +354,11 @@ operador a cada revisão real do MDIC.
 
 ```
 dashboard.qmd                 # o dashboard Quarto/Shiny (fonte)
-dashboard.html                # artefato de preview da última renderização local
-                               # (não é o que está no ar — shinyapps.io renderiza
-                               # o .qmd dinamicamente)
+dashboard.html                # artefato de preview da última renderização local -- pode
+                               # estar defasado; ver "dashboard.html pode estar defasado"
+                               # logo abaixo (não é o que está no ar — shinyapps.io
+                               # renderiza o .qmd dinamicamente)
+Dockerfile                    # imagem para rodar o dashboard sem instalar R/Quarto na máquina host
 dados/                        # parquets consolidados (gitignored, gerados pelo ETL)
 etl/
 ├── run.R                     # orquestrador do pipeline
@@ -239,11 +374,40 @@ etl/
 tests/testthat/               # suíte de testes do etl/ (fixtures sintéticas, sem rede)
 .github/workflows/atualizar-dados.yml   # cron mensal + workflow_dispatch
 scripts/medir_leitura.R       # script usado para medir a estratégia de leitura do dashboard (Arrow preguiçoso vs. collect()+memoise)
+scripts/verificar_ambiente.R  # diagnóstico de ambiente para quem está preparando uma máquina nova
 docs/superpowers/specs/       # spec de arquitetura e decisões do pipeline
 renv.lock                     # versões travadas dos pacotes R (ver "A restrição do renv")
 www/                          # imagens e assets estáticos do dashboard
 rascunho.R, teste.qmd         # protótipos antigos, fora de escopo de manutenção
 ```
+
+### `dashboard.html` pode estar defasado
+
+O `dashboard.html` versionado neste repositório é só um artefato de
+preview da última renderização feita localmente por quem commitou — não é
+o que está no ar. Ele pode ficar defasado em relação a `dashboard.qmd`
+(por exemplo, ainda conter IDs de output antigos que já mudaram no
+`.qmd`), especialmente se alguém editou o dashboard e commitou sem
+renderizar de novo.
+
+Isso **não quebra a publicação**: o workflow `atualizar-dados.yml` roda
+`quarto render dashboard.qmd` antes de cada deploy (passo "Renderizar o
+dashboard") e é esse HTML recém-gerado, não o commitado, que vai para o
+shinyapps.io. O comentário desse passo no workflow documenta o incidente
+que motivou essa garantia: um HTML defasado no repositório chegou a
+congelar títulos e IDs de output no estado antigo, quebrando painéis do
+app publicado.
+
+Se você quiser um `dashboard.html` local atualizado (por exemplo, para
+conferir a renderização antes de commitar), gere com:
+
+```bash
+quarto render dashboard.qmd
+```
+
+Não é necessário para o dashboard funcionar — nem para os testes, nem
+para rodar via `quarto run dashboard.qmd` localmente, que renderiza o
+`.qmd` diretamente.
 
 ## Limitações conhecidas
 
