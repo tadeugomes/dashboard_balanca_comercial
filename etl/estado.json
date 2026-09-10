@@ -1,5 +1,5 @@
 {
-  "atualizado_em": "2026-08-06T23:11:36Z",
+  "atualizado_em": "2026-09-10T13:31:13Z",
   "arquivos": {
     "EXP_2014": {
       "last_modified": "Tue, 27 Jul 2021 20:25:15 GMT",
@@ -50,8 +50,8 @@
       "content_length": "113715007"
     },
     "EXP_2026": {
-      "last_modified": "Thu, 06 Aug 2026 18:05:13 GMT",
-      "content_length": "65362858"
+      "last_modified": "Fri, 04 Sep 2026 18:05:56 GMT",
+      "content_length": "75055366"
     },
     "IMP_2014": {
       "last_modified": "Wed, 07 Apr 2021 15:25:03 GMT",
@@ -102,8 +102,8 @@
       "content_length": "175549886"
     },
     "IMP_2026": {
-      "last_modified": "Thu, 06 Aug 2026 18:05:11 GMT",
-      "content_length": "104173123"
+      "last_modified": "Fri, 04 Sep 2026 18:05:55 GMT",
+      "content_length": "120181098"
     }
   },
   "totais_por_ano": {
@@ -120,7 +120,7 @@
       "2023": 339695.766,
       "2024": 337046.1617,
       "2025": 348278.4625,
-      "2026": 218551.8622
+      "2026": 250855.1471
     },
     "importacao": {
       "2014": 230823.0188,
@@ -135,7 +135,7 @@
       "2023": 240792.8392,
       "2024": 262869.6062,
       "2025": 280208.4338,
-      "2026": 169512.7741
+      "2026": 195537.5118
     }
   }
 }
